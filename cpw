@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cpwpids=(`ps -ef | grep $USER | grep 'cpw' | grep -v grep | grep -v $$ | awk '{ print $2 }'`) #build an array of all cpw procs for this user that aren't this one.
+
+cpwcnt=${#cpwpids[@]} # number of elemenets in the above array
+cnt=$cpwcnt # counter to be decremented each pass
+while [ $cnt -gt 0 ]
+do
+    cnt=$cpwcnt
+    for i in "${cpwpids[@]}" # check if each pid has died yet
+    do
+        ps --pid $i >/dev/null
+        if [ $? -gt 0 ]
+        then
+            let "cnt -= 1"
+        fi
+    done
+    sleep 2
+done
+cp -v "$@" >> /tmp/cpw.log #log

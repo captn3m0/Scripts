@@ -1,0 +1,11 @@
+#!/bin/bash
+echo "Mounting Media via mount -a"
+sudo mount -a 
+cd ~
+rsync -rv ./TV/ /media/nemo/Media/TV/
+rsync -rv ./Downloads/ /media/nemo/Media/Downloads/
+rsync -rv ./Music/ /media/nemo/Media/Music/
+rsync -rv ./Setups/ /media/nemo/Media/Setups/
+rsync -rv ./Videos/ /media/nemo/Media/Videos/
+rsync -rv ./VirtualDrives/ /media/nemo/Media/VirtualDrives/
+rsync -rv ./Movies/ /media/nemo/Media/Movies/

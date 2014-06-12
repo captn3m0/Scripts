@@ -1,0 +1,7 @@
+#!/bin/bash
+synclient HorizEdgeScroll=1
+synclient HorizTwoFingerScroll=1
+synclient CircularScrolling=1
+synclient PalmDetect=1
+synclient VertEdgeScroll=1
+synclient VertTwoFingerScroll=1

@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ $1 == "-u" ]
+if [ "$1" == "-u" ]
 then
 	echo "Umount Media"
 	sudo umount /media/nemo/Media

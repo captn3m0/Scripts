@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=0.4.60
+SCRIPT_VERSION=0.4.63
 CHANGELOG="http://www.alsa-project.org/alsa-info.sh.changelog"
 
 #################################################################################
@@ -111,7 +111,7 @@ cleanup() {
 
 withaplay() {
         echo "!!Aplay/Arecord output" >> $FILE
-        echo "!!------------" >> $FILE
+        echo "!!--------------------" >> $FILE
         echo "" >> $FILE
        	echo "APLAY" >> $FILE
 	echo "" >> $FILE 
@@ -149,7 +149,7 @@ withamixer() {
 
 withalsactl() {
 	echo "!!Alsactl output" >> $FILE
-        echo "!!-------------" >> $FILE
+        echo "!!--------------" >> $FILE
         echo "" >> $FILE
         exe=""
         if [ -x /usr/sbin/alsactl ]; then
@@ -227,7 +227,7 @@ withsysfs() {
 			echo "!!-----------" >> $FILE
 			echo "" >> $FILE
 		    fi
-		    for f in init_pin_configs driver_pin_configs user_pin_configs init_verbs; do
+		    for f in init_pin_configs driver_pin_configs user_pin_configs init_verbs hints; do
 			echo "$i/$f:" >> $FILE
 			cat $i/$f >> $FILE
 			echo >> $FILE
@@ -244,9 +244,9 @@ withsysfs() {
 
 withdmesg() {
 	echo "!!ALSA/HDA dmesg" >> $FILE
-	echo "!!------------------" >> $FILE
+	echo "!!--------------" >> $FILE
 	echo "" >> $FILE
-	dmesg | grep -C1 -E 'ALSA|HDA|HDMI|sound|hda.codec|hda.intel' >> $FILE
+	dmesg | grep -C1 -E 'ALSA|HDA|HDMI|snd[_-]|sound|hda.codec|hda.intel' >> $FILE
 	echo "" >> $FILE
 	echo "" >> $FILE
 }
@@ -370,7 +370,7 @@ information about your ALSA installation and sound related hardware.
 
 See '$0 --help' for command line options.
 "
-if [[ -n "$DIALOG" ]]; then
+if [ -n "$DIALOG" ]; then
 	dialog  --backtitle "$BGTITLE" \
 		--title "ALSA-Info script v $SCRIPT_VERSION" \
 		--msgbox "$greeting_message" 20 80
@@ -392,10 +392,11 @@ trap cleanup 0
 
 if [ "$PROCEED" = "yes" ]; then
 
-if [[ -z "$LSPCI" ]] 
-then
-	echo "This script requires lspci. Please install it, and re-run this script."
-	exit 0
+if [ -z "$LSPCI" ]; then
+	if [ -d /sys/bus/pci ]; then
+		echo "This script requires lspci. Please install it, and re-run this script."
+		exit 0
+	fi
 fi
 
 #Fetch the info and store in temp files/variables
@@ -404,18 +405,17 @@ KERNEL_VERSION=`uname -r`
 KERNEL_PROCESSOR=`uname -p`
 KERNEL_MACHINE=`uname -m`
 KERNEL_OS=`uname -o`
-[[ `uname -v |grep SMP`  ]] && KERNEL_SMP="Yes" || KERNEL_SMP="No" 
+[[ `uname -v | grep SMP`  ]] && KERNEL_SMP="Yes" || KERNEL_SMP="No" 
 ALSA_DRIVER_VERSION=`cat /proc/asound/version |head -n1|awk {'print $7'} |sed 's/\.$//'`
 get_alsa_library_version
 ALSA_UTILS_VERSION=`amixer -v |awk {'print $3'}`
-VENDOR_ID=`lspci -vn |grep 040[1-3] | awk -F':' '{print $3}'|awk {'print substr($0, 2);}' >$TEMPDIR/vendor_id.tmp`
-DEVICE_ID=`lspci -vn |grep 040[1-3] | awk -F':' '{print $4}'|awk {'print $1'} >$TEMPDIR/device_id.tmp`
 LAST_CARD=$((`grep "]: " /proc/asound/cards | wc -l` - 1 ))
 
 ESDINST=$(which esd 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
 PAINST=$(which pulseaudio 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
 ARTSINST=$(which artsd 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
 JACKINST=$(which jackd 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
+ROARINST=$(which roard 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
 DMIDECODE=$(which dmidecode 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
 
 #Check for DMI data
@@ -424,15 +424,19 @@ if [ -d /sys/class/dmi/id ]; then
     DMI_SYSTEM_MANUFACTURER=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)
     DMI_SYSTEM_PRODUCT_NAME=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
     DMI_SYSTEM_PRODUCT_VERSION=$(cat /sys/class/dmi/id/product_version 2>/dev/null)
+    DMI_SYSTEM_FIRMWARE_VERSION=$(cat /sys/class/dmi/id/bios_version 2>/dev/null)
 elif [ -x $DMIDECODE ]; then
     DMI_SYSTEM_MANUFACTURER=$($DMIDECODE -s system-manufacturer 2>/dev/null)
     DMI_SYSTEM_PRODUCT_NAME=$($DMIDECODE -s system-product-name 2>/dev/null)
     DMI_SYSTEM_PRODUCT_VERSION=$($DMIDECODE -s system-version 2>/dev/null)
+    DMI_SYSTEM_FIRMWARE_VERSION=$($DMIDECODE -s bios-version 2>/dev/null)
 fi
 
 cat /proc/asound/modules 2>/dev/null|awk {'print $2'}>$TEMPDIR/alsamodules.tmp
 cat /proc/asound/cards >$TEMPDIR/alsacards.tmp
+if [[ ! -z "$LSPCI" ]]; then
 lspci |grep -i "multi\|audio">$TEMPDIR/lspci.tmp
+fi
 
 #Check for HDA-Intel cards codec#*
 cat /proc/asound/card*/codec\#* > $TEMPDIR/alsa-hda-intel.tmp 2> /dev/null
@@ -469,6 +473,7 @@ echo "" >> $FILE
 echo "Manufacturer:      $DMI_SYSTEM_MANUFACTURER" >> $FILE
 echo "Product Name:      $DMI_SYSTEM_PRODUCT_NAME" >> $FILE
 echo "Product Version:   $DMI_SYSTEM_PRODUCT_VERSION" >> $FILE
+echo "Firmware Version:  $DMI_SYSTEM_FIRMWARE_VERSION" >> $FILE
 echo "" >> $FILE
 echo "" >> $FILE
 echo "!!Kernel Information" >> $FILE
@@ -526,7 +531,14 @@ echo "      Installed - Yes ($JACKINST)" >> $FILE
 echo "      Running - $JACKRUNNING" >> $FILE
 echo "" >> $FILE
 fi
-if [[ -z "$PAINST" && -z "$ESDINST" && -z "$ARTSINST" && -z "$JACKINST" ]];then
+if [[ -n $ROARINST ]];then
+[[ `pgrep '^(.*/)?roard$'` ]] && ROARRUNNING="Yes" || ROARRUNNING="No"
+echo "RoarAudio:" >> $FILE
+echo "      Installed - Yes ($ROARINST)" >> $FILE
+echo "      Running - $ROARRUNNING" >> $FILE
+echo "" >> $FILE
+fi
+if [[ -z "$PAINST" && -z "$ESDINST" && -z "$ARTSINST" && -z "$JACKINST" && -z "$ROARINST" ]];then
 echo "No sound servers found." >> $FILE
 echo "" >> $FILE
 fi
@@ -537,6 +549,8 @@ echo "" >> $FILE
 cat $TEMPDIR/alsacards.tmp >> $FILE
 echo "" >> $FILE
 echo "" >> $FILE
+
+if [[ ! -z "$LSPCI" ]]; then
 echo "!!PCI Soundcards installed in the system" >> $FILE
 echo "!!--------------------------------------" >> $FILE
 echo "" >> $FILE
@@ -544,11 +558,12 @@ cat $TEMPDIR/lspci.tmp >> $FILE
 echo "" >> $FILE
 echo "" >> $FILE
 echo "!!Advanced information - PCI Vendor/Device/Subsystem ID's" >> $FILE
-echo "!!--------------------------------------------------------" >> $FILE
+echo "!!-------------------------------------------------------" >> $FILE
 echo "" >> $FILE
 lspci -vvn |grep -A1 040[1-3] >> $FILE
 echo "" >> $FILE
 echo "" >> $FILE
+fi
 
 if [ "$SNDOPTIONS" ]
 then
@@ -563,7 +578,7 @@ fi
 if [ -d "$SYSFS" ]
 then
 echo "!!Loaded sound module options" >> $FILE
-echo "!!--------------------------" >> $FILE
+echo "!!---------------------------" >> $FILE
 echo "" >> $FILE
 for mod in `cat /proc/asound/modules|awk {'print $2'}`;do
 echo "!!Module: $mod" >> $FILE
@@ -576,8 +591,7 @@ done
 echo "" >> $FILE
 fi
 
-if [ -s "$TEMPDIR/alsa-hda-intel.tmp" ] 
-then
+if [ -s "$TEMPDIR/alsa-hda-intel.tmp" ]; then
 	echo "!!HDA-Intel Codec information" >> $FILE
 	echo "!!---------------------------" >> $FILE
 	echo "--startcollapse--" >> $FILE
@@ -588,10 +602,9 @@ then
 	echo "" >> $FILE
 fi
 
-if [ -s "$TEMPDIR/alsa-ac97.tmp" ]
-then
+if [ -s "$TEMPDIR/alsa-ac97.tmp" ]; then
         echo "!!AC97 Codec information" >> $FILE
-        echo "!!---------------------------" >> $FILE
+        echo "!!----------------------" >> $FILE
         echo "--startcollapse--" >> $FILE
         echo "" >> $FILE
         cat $TEMPDIR/alsa-ac97.tmp >> $FILE
@@ -602,10 +615,9 @@ then
 	echo "" >> $FILE
 fi
 
-if [ -s "$TEMPDIR/alsa-usbmixer.tmp" ]
-then
+if [ -s "$TEMPDIR/alsa-usbmixer.tmp" ]; then
         echo "!!USB Mixer information" >> $FILE
-        echo "!!---------------------------" >> $FILE
+        echo "!!---------------------" >> $FILE
         echo "--startcollapse--" >> $FILE
         echo "" >> $FILE
         cat $TEMPDIR/alsa-usbmixer.tmp >> $FILE
@@ -615,8 +627,7 @@ then
 fi
 
 #If no command line options are specified, then run as though --with-all was specified
-if [[ -z "$1" ]]
-then
+if [ -z "$1" ]; then
 	update
 	withall
 	pbcheck	
@@ -625,8 +636,7 @@ fi
 fi # proceed
 
 #loop through command line arguments, until none are left.
-if [[ -n "$1" ]]
-then
+if [ -n "$1" ]; then
 	until [ -z "$1" ]
 	do
 	case "$1" in
@@ -756,7 +766,7 @@ if [ "$PROCEED" = "no" ]; then
 fi
 
 if [ "$UPLOAD" = "ask" ]; then
-	if [[ -n "$DIALOG" ]]; then
+	if [ -n "$DIALOG" ]; then
 		dialog --backtitle "$BGTITLE" --title "Information collected" --yes-label " UPLOAD / SHARE " --no-label " SAVE LOCALLY " --defaultno --yesno "\n\nAutomatically upload ALSA information to $WWWSERVICE?" 10 80
 		DIALOG_EXIT_CODE=$?
 		if [ $DIALOG_EXIT_CODE != 0 ]; then
@@ -871,27 +881,26 @@ echo ""
 fi #dialog
 
 #See if tput is available, and use it if it is.	
-if [[ -n "$TPUT" ]]
-then
+if [ -n "$TPUT" ]; then
 	if [[ -z $PASTEBIN ]]; then
 		FINAL_URL=`tput setaf 1; grep "SUCCESS:" $TEMPDIR/wget.tmp | cut -d ' ' -f 2 ; tput sgr0`
 	else
-		FINAL_URL=`tput setaf 1; grep "SUCCESS:" $TEMPDIR/wget.tmp |sed -n 's/.*\:\([0-9]\+\).*/http:\/\/pastebin.ca\/\1/p';tput sgr0`
+		FINAL_URL=`tput setaf 1; grep "SUCCESS:" $TEMPDIR/wget.tmp | sed -n 's/.*\:\([0-9]\+\).*/http:\/\/pastebin.ca\/\1/p';tput sgr0`
 	fi
 else
 	if [[ -z $PASTEBIN ]]; then
 		FINAL_URL=`grep "SUCCESS:" $TEMPDIR/wget.tmp | cut -d ' ' -f 2`
 	else
-		FINAL_URL=`grep "SUCCESS:" $TEMPDIR/wget.tmp |sed -n 's/.*\:\([0-9]\+\).*/http:\/\/pastebin.ca\/\1/p'`
+		FINAL_URL=`grep "SUCCESS:" $TEMPDIR/wget.tmp | sed -n 's/.*\:\([0-9]\+\).*/http:\/\/pastebin.ca\/\1/p'`
 	fi
 fi
 
-#Output the URL of the uploaded file.	
+# Output the URL of the uploaded file.	
 echo "Your ALSA information is located at $FINAL_URL"
 echo "Please inform the person helping you."
 echo ""
 
-#We couldnt find a suitable wget, so tell the user to upload manually.
+# We couldnt find a suitable wget, so tell the user to upload manually.
 else
 	mv -f $FILE $NFILE || exit 1
 	KEEP_OUTPUT="yes"
@@ -924,5 +933,3 @@ else
 		fi
 	fi
 fi
-
-

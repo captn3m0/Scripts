@@ -1,4 +1,5 @@
 #!/bin/bash
+root="sdb"
 if [ "$1" == "-u" ]
 then
 	echo "Umount Media"
@@ -9,13 +10,18 @@ then
 	sudo umount /media/nemo/home/nemo
 	echo "Unmounting /media/nemo/home"
 	sudo umount /media/nemo/home
-else	
-	echo "Mounting /dev/sdb1 on /media via mount -a"
+else
+	if [[ "$1" ]]
+	then
+		root="$1"
+	fi
+	echo "root set to $root"
+	echo "Mounting /dev/${root}1 on /media via mount -a"
 	sudo mount -a
-	echo "Mounting /dev/sdb2 on /media/nemo/home"
-	sudo mount /dev/sdb2 /media/nemo/home
-	echo "Mounting /dev/sdb3 on /media/nemo/live"
-	sudo mount /dev/sdb3 /media/nemo/live
+	echo "Mounting /dev/${root}2 on /media/nemo/home"
+	sudo mount /dev/${root}2 /media/nemo/home
+	echo "Mounting /dev/${root}3 on /media/nemo/live"
+	sudo mount /dev/${root}3 /media/nemo/live
 	echo "Mounting encrypted partition"
 	echo "Fetching passphrase from gnome-keyring"
 	export PASSPHRASE=`gkeyring --name 'seagate_passphrase' -l -o secret`

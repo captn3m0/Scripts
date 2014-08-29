@@ -1,0 +1,13 @@
+#!/bin/bash
+# This script sets up my X11 environtment
+# Enable all kinds of scrolling
+synclient HorizEdgeScroll=1 
+synclient HorizTwoFingerScroll=1
+synclient CircularScrolling=1
+synclient PalmDetect=1
+synclient VertEdgeScroll=1
+synclient VertTwoFingerScroll=1
+# Disables the capslock key
+setxkbmap -option caps:none
+# This disables the faulty mouse wheel scroll on my usb mouse
+xinput set-button-map 13 1 2 3  0 0

@@ -10,4 +10,8 @@ synclient VertTwoFingerScroll=1
 # Disables the capslock key
 setxkbmap -option caps:none
 # This disables the faulty mouse wheel scroll on my usb mouse
-xinput set-button-map 13 1 2 3  0 0
+MOUSE_ID=`xinput list |grep Logitech|egrep "[0-9]{2}" -o`
+if [[ $MOUSE_ID ]]; then
+    echo "Logitech Mouse connected. Disabling Scroll"
+    xinput set-button-map $MOUSE_ID 1 2 3  0 0
+fi

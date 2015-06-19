@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=0.4.63
+SCRIPT_VERSION=0.4.64
 CHANGELOG="http://www.alsa-project.org/alsa-info.sh.changelog"
 
 #################################################################################
@@ -35,6 +35,8 @@ BGTITLE="ALSA-Info v $SCRIPT_VERSION"
 PASTEBINKEY="C9cRIO8m/9y8Cs0nVs0FraRx7U0pHsuc"
 #Define some simple functions
 
+WGET=$(which wget 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null)
+
 pbcheck(){
 	[[ $UPLOAD = "no" ]] && return
 
@@ -46,10 +48,12 @@ pbcheck(){
 }
 
 update() {
+	test -z "$WGET" -o ! -x "$WGET" && return
+
 	SHFILE=`mktemp -t alsa-info.XXXXXXXXXX` || exit 1
 	wget -O $SHFILE "http://www.alsa-project.org/alsa-info.sh" >/dev/null 2>&1
 	REMOTE_VERSION=`grep SCRIPT_VERSION $SHFILE |head -n1 |sed 's/.*=//'`
-	if [ "$REMOTE_VERSION" != "$SCRIPT_VERSION" ]; then
+	if [ -s "$SHFILE" -a "$REMOTE_VERSION" != "$SCRIPT_VERSION" ]; then
 		if [[ -n $DIALOG ]]
 		then
 			OVERWRITE=
@@ -260,6 +264,7 @@ withall() {
 	withlsmod
 	withsysfs
 	withdmesg
+	WITHALL="no"
 }
 
 get_alsa_library_version() {
@@ -629,7 +634,6 @@ fi
 #If no command line options are specified, then run as though --with-all was specified
 if [ -z "$1" ]; then
 	update
-	withall
 	pbcheck	
 fi
 
@@ -642,7 +646,6 @@ if [ -n "$1" ]; then
 	case "$1" in
 		--pastebin)
 		        update
-			withall
         		pbcheck
 			;;
 		--update)
@@ -651,11 +654,9 @@ if [ -n "$1" ]; then
 			;;
 		--upload)
 			UPLOAD="yes"
-			withall
 			;;
 		--no-upload)
 			UPLOAD="no"
-			withall
 			;;
 		--output)
 			shift
@@ -666,27 +667,32 @@ if [ -n "$1" ]; then
 			echo "Debugging enabled. $FILE and $TEMPDIR will not be deleted"
 			KEEP_FILES="yes"
 			echo ""
-			withall
 			;;
 		--with-all)
 			withall
 			;;
 		--with-aplay)
 			withaplay
+			WITHALL="no"
 			;;
 		--with-amixer)
 			withamixer
+			WITHALL="no"
 			;;
 		--with-alsactl)
 			withalsactl
+			WITHALL="no"
 			;;
 		--with-devices)
 			withdevices
+			WITHALL="no"
 			;;
 		--with-dmesg)
 			withdmesg
+			WITHALL="no"
 			;;
 		--with-configs)
+			WITHALL="no"
 			if [[ -e $HOME/.asoundrc ]] || [[ -e /etc/asound.conf ]]
 			then
 				echo "!!ALSA configuration files" >> $FILE
@@ -716,7 +722,9 @@ if [ -n "$1" ]; then
 			;;
 		--stdout)
 			UPLOAD="no"
-			withall
+			if [ -z "$WITHALL" ]; then
+				withall
+			fi
 			cat $FILE
 			rm $FILE
 			;;
@@ -763,6 +771,10 @@ fi
 
 if [ "$PROCEED" = "no" ]; then
 	exit 1
+fi
+
+if [ -z "$WITHALL" ]; then
+	withall
 fi
 
 if [ "$UPLOAD" = "ask" ]; then
@@ -823,8 +835,7 @@ if [ "$UPLOAD" = "no" ]; then
 fi # UPLOAD
 
 #Test that wget is installed, and supports --post-file. Upload $FILE if it does, and prompt user to upload file if it doesnt. 
-if
-WGET=$(which wget 2>/dev/null| sed 's|^[^/]*||' 2>/dev/null); [[ -n "${WGET}" ]] && [[ -x "${WGET}" ]] && [[ `wget --help |grep post-file` ]]
+if [[ -n "${WGET}" ]] && [[ -x "${WGET}" ]] && [[ `wget --help |grep post-file` ]]
 then
 
 if [[ -n $DIALOG ]]

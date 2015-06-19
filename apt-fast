@@ -17,7 +17,7 @@
 [ "`whoami`" = root ] || exec sudo "$0" "$@"
 
 # Test if the axel is installed
-if [ ! -x /usr/bin/axel ]
+if [ ! -x /usr/local/bin/axel ]
 then echo "axel is not installed, perform this?(y/n)"
     read ops
     case $ops in

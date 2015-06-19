@@ -1,0 +1,4 @@
+#!/bin/bash
+cd ~
+shopt -s dotglob
+rsync --links --exclude-from ~/.rsync-exclude.txt -avz --progress ./ /media/nemo/Nemo_Backup/

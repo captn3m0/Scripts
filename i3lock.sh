@@ -6,22 +6,22 @@ xset -b #disable scrot beep
 # Dependencies: imagemagick, i3lock-color-git, scrot
 
 IMAGE=$(mktemp).png
-TEXT="Type password to unlock"
+#TEXT="Type password to unlock"
 
-VALUE="60" #brightness value to compare to
+#VALUE="60" #brightness value to compare to
 scrot $IMAGE
-COLOR=`convert $IMAGE -colorspace hsb -resize 1x1 txt:- | sed -E '/.*$/ {
-                             N
-                             s/.*\n.*([0-9]{1,2}[^\.])\.[0-9]+%\)$/\1/
-                             }'`;
+
 # pixelate: -scale 10% -scale 1000%
-if [ "$COLOR" -gt "$VALUE" ]; then #white background image and black text
-    convert $IMAGE -level 0%,100%,0.6 -filter Gaussian -resize 20% -define filter:sigma=1.5 -resize 500% -font Liberation-Sans -pointsize 26 -fill black -gravity center -annotate +0+160 "$TEXT" - | composite -gravity center lockdark.png - $IMAGE
-    PARAM='--textcolor=00000000 --insidecolor=0000001c --ringcolor=0000003e --linecolor=00000000 --keyhlcolor=ffffff80 --ringvercolor=ffffff00 --insidevercolor=ffffff1c --ringwrongcolor=ffffff55 --insidewrongcolor=ffffff1c'
-else #black
-    convert $IMAGE -level 0%,100%,0.6 -filter Gaussian -resize 20% -define filter:sigma=1.5 -resize 500% -font Liberation-Sans -pointsize 26 -fill white -gravity center -annotate +0+160 "$TEXT" - | composite -gravity center lock.png - $IMAGE
-    PARAM='--textcolor=ffffff00 --insidecolor=ffffff1c --ringcolor=ffffff3e --linecolor=ffffff00 --keyhlcolor=00000080 --ringvercolor=00000000 --insidevercolor=0000001c --ringwrongcolor=00000055 --insidewrongcolor=0000001c'
-fi
+# if [ "$COLOR" -gt "$VALUE" ]; then #white background image and black text
+#     convert $IMAGE -level 0%,100%,0.6 -filter Gaussian -resize 20% -define filter:sigma=1.5 -resize 500% - | composite lockscreen.png - -compose over $IMAGE
+#     PARAM='--textcolor=00000000 --insidecolor=0000001c --ringcolor=0000003e --linecolor=00000000 --keyhlcolor=ffffff80 --ringvercolor=ffffff00 --insidevercolor=ffffff1c --ringwrongcolor=ffffff55 --insidewrongcolor=ffffff1c'
+# else #black
+#     convert $IMAGE -level 0%,100%,0.6 -filter Gaussian -resize 20% -define filter:sigma=1.5 -resize 500% - | composite lockscreen.png - -compose over $IMAGE
+#     PARAM='--textcolor=ffffff00 --insidecolor=ffffff1c --ringcolor=ffffff3e --linecolor=ffffff00 --keyhlcolor=00000080 --ringvercolor=00000000 --insidevercolor=0000001c --ringwrongcolor=00000055 --insidewrongcolor=0000001c'
+# fi
+
+convert $IMAGE -level 0%,100%,0.6 -filter Gaussian -resize 20% -define filter:sigma=1.5 -resize 500% - | composite lockscreen.png - -compose over $IMAGE
+PARAM='--textcolor=00000000 --insidecolor=0000001c --ringcolor=0000003e --linecolor=00000000 --keyhlcolor=ffffff80 --ringvercolor=ffffff00 --insidevercolor=ffffff1c --ringwrongcolor=ffffff55 --insidewrongcolor=ffffff1c'
 
 # try to use a forked version of i3lock with prepared parameters
 i3lock $PARAM -i $IMAGE > /dev/null 2>&1

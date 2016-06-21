@@ -1,11 +1,12 @@
 #!/bin/bash
 echo "Mounting Media via mount -a"
-sudo mount -a 
+#sudo mount -a 
 cd ~
-rsync -rv ./TV/ /media/nemo/Media/TV/ --size-only --no-links
-rsync -rv ./Downloads/ /media/nemo/Media/Downloads/ --size-only --no-links
-rsync -rv ./Music/ /media/nemo/Media/Music/ --size-only --no-links
-rsync -rv ./Setups/ /media/nemo/Media/Setups/ --size-only --no-links
-rsync -rv ./Videos/ /media/nemo/Media/Videos/ --size-only --no-links
-rsync -rv ./VirtualDrives/ /media/nemo/Media/VirtualDrives/ --size-only --no-links
-rsync -rv ./Movies/ /media/nemo/Media/Movies/ --size-only --no-links
+MEDIA="/run/media/nemo/Media"
+rsync -rv ./TV/ "$MEDIA/TV/" --size-only --no-links
+rsync -rv ./Downloads/ "$MEDIA/Downloads/" --size-only --no-links
+rsync -rv ./Music/ "$MEDIA/Music/" --size-only --no-links
+rsync -rv ./Setups/ "$MEDIA/Setups/" --size-only --no-links
+rsync -rv ./Videos/ "$MEDIA/Videos/" --size-only --no-links
+rsync -rv ./VirtualDrives/ "$MEDIA/VirtualDrives/" --size-only --no-links
+rsync -rv ./Movies/ "$MEDIA/Movies/" --size-only --no-links

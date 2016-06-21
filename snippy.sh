@@ -27,12 +27,15 @@
 #    TIP: If you're using XMonad, add something like this to xmonad.hs
 #      ((mod4Mask, xK_s), spawn "/path/to/snippy")
 #
+#  Notes: I have disabled GUIPASTE, because that screws up my cursor position
+#  and pastes in the wrong place. Instead I just use i3 focus
+#
+#
 DIR=${HOME}/.snippy
 APPS="xdotool xsel dmenu"
 DMENU_ARGS="-b"
 TMPFILE="/tmp/.snippy.tmp"; :>$TMPFILE
-# if nothing happens, try "xdotool click 2", "xdotool key ctrl+v" or "xdotool key ctrl+shift+v"
-GUIPASTE="xdotool click 2" 
+
 CLIPASTE="xdotool key ctrl+v"
 
 # smarty like template engine which executes inline bash in (bashdown) strings (replaces variables with values e.g.)
@@ -65,6 +68,10 @@ init(){
   return 0
 }
 
+log(){
+  echo $1 >> /home/nemo/.log/snippy.log
+}
+
 run(){
   cd ${DIR}
   # Use the filenames in the snippy directory as menu entries.
@@ -77,16 +84,13 @@ run(){
   else
     ${FILE} &> $TMPFILE # execute as bashcommand
   fi
-  xsel --input < $TMPFILE
-  # Paste into the current application.
-  [[ is_window ]] && ${GUIPASTE} || ${CLIPASTE} # cli or gui paste
-}
 
+  xclip -selection c < $TMPFILE
+  # xsel < $TMPFILE
 
-is_window(){
-  name="$(xdotool getwindowname $(xdotool getwindowfocus) | tr '[:upper:]' '[:lower:]')"
-  [[ ! "$name" =~ term|tilda ]] && return 1
-  return 0
+  focused_window_id="$(xdotool getwindowfocus)"
+  i3-msg '[id="$focused_window_id"] focus'
+  xdotool key ctrl+v
 }
 
 init && run

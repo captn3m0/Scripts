@@ -41,4 +41,4 @@ for f in FILES:
   h.close()
   open(dest, "w+").write(contents)
 print "Downloaded all files, executing %s" % FILES[0]
-os.system("python2 %s" % TMPDIR + '/' + FILES[0] + ' ' + ' '.join(sys.argv[1:]))
+os.system("python %s" % TMPDIR + '/' + FILES[0] + ' ' + ' '.join(sys.argv[1:]))

@@ -1,0 +1,18 @@
+#!/bin/env node
+
+var frak = require('frakjs');
+var fs = require('fs');
+
+var lineReader = require('readline').createInterface({
+  input: require('fs').createReadStream(process.argv[2])
+});
+
+var arr = [];
+
+lineReader.on('line', function (line) {
+	arr.push(line);
+});
+
+lineReader.on('close', function() {
+	console.log(frak.pattern(arr).toString());
+});

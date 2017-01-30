@@ -2,5 +2,5 @@
 
 LOGFILE="/home/nemo/logs/auth.log"
 
-/bin/su nemo -c "DISPLAY=:0 /home/nemo/projects/scripts/i3lock.sh" >> $LOGFILE
+/usr/bin/systemctl start --no-block i3lock.service
 echo "`date` locked using Yubikey $?" >> $LOGFILE

@@ -8,7 +8,7 @@ xset -b #disable scrot beep
 PARAM='--textcolor=00000000 --insidecolor=0000001c --ringcolor=0000003e --linecolor=00000000 --keyhlcolor=ffffff80 --ringvercolor=ffffff00 --insidevercolor=ffffff1c --ringwrongcolor=ffffff55 --insidewrongcolor=ffffff1c'
 IMAGE_COMPOSITE="composite_office_lockscreen.png"
 
-i3lock $PARAM -i $IMAGE_COMPOSITE
+i3lock -n $PARAM -i $IMAGE_COMPOSITE
 exit
 
 # Dependencies: imagemagick, i3lock-color-git, scrot

@@ -8,5 +8,6 @@ try:
         chartlist = soup.find(class_="chartlist-now-scrobbling").parent.parent.find(class_='chartlist-name').get_text().strip().replace('\n', '')
         print(chartlist)
 except Exception as e:
-    print("FAILED")
-    exit(1)
+	with open('/home/nemo/.cmus/now-playing.txt', 'r') as myfile:
+		print(myfile.read().strip())
+exit(0)

@@ -3,37 +3,37 @@ root="sdb"
 if [ "$1" == "-u" ]
 then
 	echo "Umount Media"
-	sudo umount /media/nemo/Media
-	echo "Umounting /media/nemo/live"
-	sudo umount /media/nemo/live
-	echo "Umounting /media/nemo/home/nemo"
-	sudo umount /media/nemo/home/nemo
-	echo "Unmounting /media/nemo/home"
-	sudo umount /media/nemo/home
+	sudo umount /mnt/Media
+	# echo "Umounting /mnt/seagate/live"
+	# sudo umount /mnt/seagate/live
+	# echo "Umounting /mnt/seagate/home/nemo"
+	# sudo umount /mnt/seagate/home/nemo
+	# echo "Unmounting /mnt/seagate/home"
+	# sudo umount /mnt/seagate/home
 else
 	if [[ "$1" ]]
 	then
 		root="$1"
 	fi
 	echo "root set to $root"
-	echo "Mounting /dev/${root}1 on /media via mount -a"
-	sudo mount -a
-	echo "Mounting /dev/${root}2 on /media/nemo/home"
-	sudo mount /dev/${root}2 /media/nemo/home
-	echo "Mounting /dev/${root}3 on /media/nemo/live"
-	sudo mount /dev/${root}3 /media/nemo/live
-	echo "Mounting encrypted partition"
-	echo "Fetching passphrase from gnome-keyring"
-	export PASSPHRASE=`gkeyring --name 'seagate_passphrase' -l -o secret`
-	export FNEK_SIG=`gkeyring --name 'seagate_fnek_sig' -l -o secret`
+	echo "Mounting /dev/${root}1 on /mnt/media via mount -a"
+	sudo mount /dev/${root}1 /mnt/Media
+	# echo "Mounting /dev/${root}2 on /mnt/seagate/home"
+	# sudo mount /dev/${root}2 /mnt/seagate/home
+	# echo "Mounting /dev/${root}3 on /mnt/seagate/live"
+	# sudo mount /dev/${root}3 /mnt/seagate/live
+	# echo "Mounting encrypted partition"
+	# echo "Fetching passphrase from gnome-keyring"
+	# export PASSPHRASE=`gkeyring --name 'seagate_passphrase' -l -o secret`
+	# export FNEK_SIG=`gkeyring --name 'seagate_fnek_sig' -l -o secret`
 
-	#We use the method of adding passphrase to a file because command line args can be read by ps
-	echo "passphrase_passwd=$PASSPHRASE" > /tmp/passphrase
-	#Add the passphrase to ecryptfs manager
-	echo $PASSPHRASE | sudo ecryptfs-add-passphrase --fnek
-	#Mount the encrypted partition
-	sudo mount -t ecryptfs /media/nemo/home/.ecryptfs/nemo/.Private/ /media/nemo/home/nemo/ -o ecryptfs_sig=1b2d93c21180690d,ecryptfs_fnek_sig=$FNEK_SIG,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_passthrough=n,key=passphrase:passphrase_passwd_file=/tmp/passphrase
-	echo "Deleting passphrase file"
-	rm /tmp/passphrase
-	echo "Done"
+	# #We use the method of adding passphrase to a file because command line args can be read by ps
+	# echo "passphrase_passwd=$PASSPHRASE" > /tmp/passphrase
+	# #Add the passphrase to ecryptfs manager
+	# echo $PASSPHRASE | sudo ecryptfs-add-passphrase --fnek
+	# #Mount the encrypted partition
+	# sudo mount -t ecryptfs /mnt/seagate/home/.ecryptfs/nemo/.Private/ /mnt/seagate/home/nemo/ -o ecryptfs_sig=1b2d93c21180690d,ecryptfs_fnek_sig=$FNEK_SIG,ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_passthrough=n,key=passphrase:passphrase_passwd_file=/tmp/passphrase
+	# echo "Deleting passphrase file"
+	# rm /tmp/passphrase
+	# echo "Done"
 fi

@@ -8,5 +8,5 @@ export DISPLAY=:0
 # We only unlock the device if the key matches
 if [[ "$YUBIKEY_SERIAL" -eq "$DEVICE_SERIAL" ]]; then
 	echo "`date` unlocked using yubkikey" >> $LOGFILE
-	/usr/bin/systemctl stop i3lock.service
+	xautolock -unlocknow
 fi

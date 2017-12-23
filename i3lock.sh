@@ -30,7 +30,7 @@ orig_wall=$HOME/.wall.png
 folder="/home/nemo/projects/personal/avatars/lockscreen"
 
 # User supplied Image
-user_image="$folder/bg.png"
+user_image="$folder/bg3.png"
 
 # Versions (from here)
 # You can use these images to set different versions as wallpaper

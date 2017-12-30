@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mkdir -p /tmp/frames
+rm -fr /tmp/frames/*
+ffmpeg -i $1 -vf scale=320:-1:flags=lanczos,fps=10 /tmp/frames/ffout%03d.png
+convert -loop 0 /tmp/frames/ffout*.png $1.gif

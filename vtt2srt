@@ -8,6 +8,7 @@
 // Check command line mode
 if (empty($argv) or $argc <2)
 {
+    echo ("usage instructions: \n");
     exit ("vtt2srt file.vtt [file.srt]\n");
 }
 

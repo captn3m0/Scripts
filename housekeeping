@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Run karn on all work projects so that my git identities are correct
+
+WORK_ROOT="/home/nemo/projects/work/razorpay"
+find $WORK_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {}/.. && karn update"
+
+PERSONAL_ROOT="/home/nemo/projects/personal"
+find $PERSONAL_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {}/.. && karn update"

@@ -8,7 +8,7 @@ ZONE_IDENTIFIER="624d0d36f927426fdbeef7fb3770ac43"
 RECORD_IDENTIFIER="54331eb439163ad2c8a5cefbdc09edef"
 RECORD_NAME="me.captnemo.in"
 
-LOG_FILE="/home/nemo/.log/cf-dydns.log"
+LOG_FILE="/home/nemo/logs/cf-dydns.log"
 
 IP_FILE="/tmp/cfip.txt"
 ID_FILE="/home/nemo/.cloudflare.ids"

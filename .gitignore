@@ -1,2 +1,3 @@
 *.log
 drone-secret-add
+drone-registry-add

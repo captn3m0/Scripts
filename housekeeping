@@ -7,3 +7,6 @@ find $WORK_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {}/..
 
 PERSONAL_ROOT="/home/nemo/projects/personal"
 find $PERSONAL_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {}/.. && karn update"
+
+# Cleanup yay-cache
+find /home/nemo/.cache/yay -iregex '.*\.\(bz2\|tar\|zip\|deb\|xz\|gz\)$' -delete

@@ -10,3 +10,23 @@ find $PERSONAL_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {
 
 # Cleanup yay-cache
 find /home/nemo/.cache/yay -iregex '.*\.\(bz2\|tar\|zip\|deb\|xz\|gz\)$' -delete
+
+
+# Remove orphan packages
+pacman -Rns $(pacman -Qtdq)
+
+# Clear systemd logs
+sudo journalctl --vacuum-size=100M
+
+# Clear docker stuff
+sudo docker system prune -af
+
+## KEEP ALL NETWORK RELATED STUFF BELOW THIS
+echo "Going to try stuff that needs network access now"
+
+# Push passwords to keybase
+pass git push
+
+# Sync mobile passwords
+cd /home/nemo/projects/personal/mobile-passwords
+git from && ./runme.sh && git push

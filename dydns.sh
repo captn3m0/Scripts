@@ -1,7 +1,13 @@
 #!/bin/bash
+
 set -euo pipefail
+gettoken () 
+{ 
+    export "`basename $1`"="$(pass show $1)"
+}
+
 # Based on https://gist.github.com/benkulbertis/fff10759c2391b6618dd/
-CF_KEY=`gkeyring -n CF_KEY --output secret`
+CF_KEY=`gettoken CloudFlare/CF_KEY`
 CF_EMAIL="capt.n3m0@gmail.com"
 
 ZONE_IDENTIFIER="624d0d36f927426fdbeef7fb3770ac43"

@@ -1,7 +1,8 @@
 #!/bin/sh
-
+# Picked up from https://github.com/pixelb/scripts/blob/master/scripts/ansi2html.sh
 # Convert ANSI (terminal) colours and attributes to HTML
 
+# Licence: LGPLv2
 # Author:
 #    http://www.pixelbeat.org/docs/terminal_colours/
 # Examples:
@@ -31,65 +32,91 @@
 #                         Handle codes with combined attributes and color.
 #                         Handle isolated <bold> attributes with css.
 #                         Strip more terminal control codes.
-#    V0.12, 12 Jul 2011
+#    V0.24, 14 Sep 2017
 #      http://github.com/pixelb/scripts/commits/master/scripts/ansi2html.sh
 
+gawk --version >/dev/null || exit 1
+
 if [ "$1" = "--version" ]; then
-    echo "0.12" && exit
+    printf '0.23\n' && exit
 fi
+
+usage()
+{
+printf '%s\n' \
+'This utility converts ANSI codes in data passed to stdin
+It has 4 optional parameters:
+--bg=dark --palette=linux|solarized|tango|xterm --css-only|--body-only
+E.g.: ls -l --color=always | ansi2html.sh --bg=dark > ls.html' >&2
+    exit
+}
 
 if [ "$1" = "--help" ]; then
-    echo "This utility converts ANSI codes in data passed to stdin" >&2
-    echo "It has 2 optional parameters:" >&2
-    echo "   --bg=dark --palette=linux|solarized|tango|xterm" >&2
-    echo "E.g.: ls -l --color=always | ansi2html.sh --bg=dark > ls.html" >&2
-    exit
+    usage
 fi
 
-[ "$1" = "--bg=dark" ] && { dark_bg=yes; shift; }
+processArg()
+{
+    [ "$1" = "--bg=dark" ] && { dark_bg=yes; return; }
+    [ "$1" = "--css-only" ] && { css_only=yes; return; }
+    [ "$1" = "--body-only" ] && { body_only=yes; return; }
+    if [ "$1" = "--palette=solarized" ]; then
+       # See http://ethanschoonover.com/solarized
+       P0=073642;  P1=D30102;  P2=859900;  P3=B58900;
+       P4=268BD2;  P5=D33682;  P6=2AA198;  P7=EEE8D5;
+       P8=002B36;  P9=CB4B16; P10=586E75; P11=657B83;
+      P12=839496; P13=6C71C4; P14=93A1A1; P15=FDF6E3;
+      return;
+    elif [ "$1" = "--palette=solarized-xterm" ]; then
+       # Above mapped onto the xterm 256 color palette
+       P0=262626;  P1=AF0000;  P2=5F8700;  P3=AF8700;
+       P4=0087FF;  P5=AF005F;  P6=00AFAF;  P7=E4E4E4;
+       P8=1C1C1C;  P9=D75F00; P10=585858; P11=626262;
+      P12=808080; P13=5F5FAF; P14=8A8A8A; P15=FFFFD7;
+      return;
+    elif [ "$1" = "--palette=tango" ]; then
+       # Gnome default
+       P0=000000;  P1=CC0000;  P2=4E9A06;  P3=C4A000;
+       P4=3465A4;  P5=75507B;  P6=06989A;  P7=D3D7CF;
+       P8=555753;  P9=EF2929; P10=8AE234; P11=FCE94F;
+      P12=729FCF; P13=AD7FA8; P14=34E2E2; P15=EEEEEC;
+      return;
+    elif [ "$1" = "--palette=xterm" ]; then
+       P0=000000;  P1=CD0000;  P2=00CD00;  P3=CDCD00;
+       P4=0000EE;  P5=CD00CD;  P6=00CDCD;  P7=E5E5E5;
+       P8=7F7F7F;  P9=FF0000; P10=00FF00; P11=FFFF00;
+      P12=5C5CFF; P13=FF00FF; P14=00FFFF; P15=FFFFFF;
+      return;
+    else # linux console
+       P0=000000;  P1=AA0000;  P2=00AA00;  P3=AA5500;
+       P4=0000AA;  P5=AA00AA;  P6=00AAAA;  P7=AAAAAA;
+       P8=555555;  P9=FF5555; P10=55FF55; P11=FFFF55;
+      P12=5555FF; P13=FF55FF; P14=55FFFF; P15=FFFFFF;
+      [ "$1" = "--palette=linux" ] && return;
+    fi
+}
 
-if [ "$1" = "--palette=solarized" ]; then
-   # See http://ethanschoonover.com/solarized
-   P0=073642;  P1=D30102;  P2=859900;  P3=B58900;
-   P4=268BD2;  P5=D33682;  P6=2AA198;  P7=EEE8D5;
-   P8=002B36;  P9=CB4B16; P10=586E75; P11=657B83;
-  P12=839496; P13=6C71C4; P14=93A1A1; P15=FDF6E3;
-  shift;
-elif [ "$1" = "--palette=solarized-xterm" ]; then
-   # Above mapped onto the xterm 256 color palette
-   P0=262626;  P1=AF0000;  P2=5F8700;  P3=AF8700;
-   P4=0087FF;  P5=AF005F;  P6=00AFAF;  P7=E4E4E4;
-   P8=1C1C1C;  P9=D75F00; P10=585858; P11=626262;
-  P12=808080; P13=5F5FAF; P14=8A8A8A; P15=FFFFD7;
-  shift;
-elif [ "$1" = "--palette=tango" ]; then
-   # Gnome default
-   P0=000000;  P1=CC0000;  P2=4E9A06;  P3=C4A000;
-   P4=3465A4;  P5=75507B;  P6=06989A;  P7=D3D7CF;
-   P8=555753;  P9=EF2929; P10=8AE234; P11=FCE94F;
-  P12=729FCF; P13=AD7FA8; P14=34E2E2; P15=EEEEEC;
-  shift;
-elif [ "$1" = "--palette=xterm" ]; then
-   P0=000000;  P1=CD0000;  P2=00CD00;  P3=CDCD00;
-   P4=0000EE;  P5=CD00CD;  P6=00CDCD;  P7=E5E5E5;
-   P8=7F7F7F;  P9=FF0000; P10=00FF00; P11=FFFF00;
-  P12=5C5CFF; P13=FF00FF; P14=00FFFF; P15=FFFFFF;
-  shift;
-else # linux console
-   P0=000000;  P1=AA0000;  P2=00AA00;  P3=AA5500;
-   P4=0000AA;  P5=AA00AA;  P6=00AAAA;  P7=AAAAAA;
-   P8=555555;  P9=FF5555; P10=55FF55; P11=FFFF55;
-  P12=5555FF; P13=FF55FF; P14=55FFFF; P15=FFFFFF;
-  [ "$1" = "--palette=linux" ] && shift
+processArg #defaults
+for var in "$@"; do processArg $var; done
+[ "$css_only" ] && [ "$body_only" ] && usage
+
+# Mac OSX's GNU sed is installed as gsed
+# use e.g. homebrew 'gnu-sed' to get it
+if ! sed --version >/dev/null 2>&1; then
+  if gsed --version >/dev/null 2>&1; then
+    alias sed=gsed
+  else
+    echo "Error, can't find an acceptable GNU sed." >&2
+    exit 1
+  fi
 fi
 
-[ "$1" = "--bg=dark" ] && { dark_bg=yes; shift; }
-
-echo -n "<html>
+[ "$css_only" ] || [ "$body_only" ] || printf '%s' "<html>
 <head>
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
 <style type=\"text/css\">
-.ef0,.f0 { color: #$P0; } .eb0,.b0 { background-color: #$P0; }
+"
+[ "$body_only" ] || printf ".ef0,.f0 { color: #$P0; } .eb0,.b0 { background-color: #$P0; }
 .ef1,.f1 { color: #$P1; } .eb1,.b1 { background-color: #$P1; }
 .ef2,.f2 { color: #$P2; } .eb2,.b2 { background-color: #$P2; }
 .ef3,.f3 { color: #$P3; } .eb3,.b3 { background-color: #$P3; }
@@ -114,155 +141,139 @@ echo -n "<html>
 .eb14 { background-color: #$P14; }
 .eb15 { background-color: #$P15; }
 "
-
 # The default xterm 256 colour palette
-for red in $(seq 0 5); do
-  for green in $(seq 0 5); do
-    for blue in $(seq 0 5); do
-        c=$((16 + ($red * 36) + ($green * 6) + $blue))
-        r=$((($red * 40 + 55) * ($red > 0)))
-        g=$((($green * 40 + 55) * ($green > 0)))
-        b=$((($blue * 40 + 55) * ($blue > 0)))
-        printf ".ef%d { color: #%2.2x%2.2x%2.2x; } " $c $r $g $b
-        printf ".eb%d { background-color: #%2.2x%2.2x%2.2x; }\n" $c $r $g $b
+for red in 0 1 2 3 4 5 ; do
+  for green in 0 1 2 3 4 5 ; do
+    for blue in 0 1 2 3 4 5 ; do
+      c=$((16 + ($red * 36) + ($green * 6) + $blue))
+      r=$((($red * 40 + 55) * ($red > 0)))
+      g=$((($green * 40 + 55) * ($green > 0)))
+      b=$((($blue * 40 + 55) * ($blue > 0)))
+      [ "$body_only" ] || printf ".ef%d { color: #%2.2x%2.2x%2.2x; } " $c $r $g $b
+      [ "$body_only" ] || printf ".eb%d { background-color: #%2.2x%2.2x%2.2x; }\n" $c $r $g $b
     done
   done
 done
 for gray in $(seq 0 23); do
   c=$(($gray+232))
   l=$(($gray*10 + 8))
-  printf ".ef%d { color: #%2.2x%2.2x%2.2x; } " $c $l $l $l
-  printf ".eb%d { background-color: #%2.2x%2.2x%2.2x; }\n" $c $l $l $l
+  [ "$body_only" ] || printf ".ef%d { color: #%2.2x%2.2x%2.2x; } " $c $l $l $l
+  [ "$body_only" ] || printf ".eb%d { background-color: #%2.2x%2.2x%2.2x; }\n" $c $l $l $l
 done
 
-echo -n '
-.f9 { color: '`[ "$dark_bg" ] && echo "#$P7;" || echo "#$P0;"`' }
-.b9 { background-color: #'`[ "$dark_bg" ] && echo $P0 || echo $P15`'; }
+[ "$body_only" ] || printf '%s' '
+.f9 { color: '`[ "$dark_bg" ] && printf "#$P7;" || printf "#$P0;"`' }
+.b9 { background-color: #'`[ "$dark_bg" ] && printf $P0 || printf $P15`'; }
 .f9 > .bold,.bold > .f9, body.f9 > pre > .bold {
   /* Bold is heavy black on white, or bright white
      depending on the default background */
-  color: '`[ "$dark_bg" ] && echo "#$P15;" || echo "#$P0;"`'
-  font-weight: '`[ "$dark_bg" ] && echo 'normal;' || echo 'bold;'`'
+  color: '`[ "$dark_bg" ] && printf "#$P15;" || printf "#$P0;"`'
+  font-weight: '`[ "$dark_bg" ] && printf 'normal;' || printf 'bold;'`'
 }
 .reverse {
-  /* CSS doesnt support swapping fg and bg colours unfortunately,
+  /* CSS does not support swapping fg and bg colours unfortunately,
      so just hardcode something that will look OK on all backgrounds. */
   '"color: #$P0; background-color: #$P7;"'
 }
 .underline { text-decoration: underline; }
 .line-through { text-decoration: line-through; }
 .blink { text-decoration: blink; }
-
-</style>
+/* Avoid pixels between adjacent span elements.
+   Note this only works for lines less than 80 chars
+   where we close span elements on the same line.
+span { display: inline-block; }
+*/
+'
+[ "$body_only" ] || [ "$css_only" ] && printf '%s\n' \
+'To use the css generated from --css-only, do: '\
+'<head><link rel="stylesheet" type="text/css" href="style.css"></head>' >&2
+[ "$css_only" ] && exit
+[ "$body_only" ] || printf '%s' '</style>
 </head>
-
 <body class="f9 b9">
 <pre>
 '
+[ "$body_only" ] && printf '%s\n' 'Be sure to use <body class="f9 b9"> and <pre>' >&2
 
 p='\x1b\['        #shortcut to match escape codes
-P="\(^[^°]*\)¡$p" #expression to match prepended codes below
 
 # Handle various xterm control sequences.
 # See /usr/share/doc/xterm-*/ctlseqs.txt
 sed "
+# escape ampersand and quote
+s#&#\&amp;#g; s#\"#\&quot;#g;
 s#\x1b[^\x1b]*\x1b\\\##g  # strip anything between \e and ST
 s#\x1b][0-9]*;[^\a]*\a##g # strip any OSC (xterm title etc.)
-
-#handle carriage returns
-s#^.*\r\{1,\}\([^$]\)#\1#
 s#\r\$## # strip trailing \r
-
 # strip other non SGR escape sequences
 s#[\x07]##g
 s#\x1b[]>=\][0-9;]*##g
 s#\x1bP+.\{5\}##g
+# Mark cursor positioning codes \"Jr;c;
+s#${p}\([0-9]\{1,2\}\)G#\"J;\1;#g
+s#${p}\([0-9]\{1,2\}\);\([0-9]\{1,2\}\)H#\"J\1;\2;#g
+# Mark clear as \"Cn where n=1 is screen and n=0 is to end-of-line
+s#${p}H#\"C1;#g
+s#${p}K#\"C0;#g
+# Mark Cursor move columns as \"Mn where n is +ve for right, -ve for left
+s#${p}C#\"M1;#g
+s#${p}\([0-9]\{1,\}\)C#\"M\1;#g
+s#${p}\([0-9]\{1,\}\)D#\"M-\1;#g
+s#${p}\([0-9]\{1,\}\)P#\"X\1;#g
 s#${p}[0-9;?]*[^0-9;?m]##g
-
-#remove backspace chars and what they're backspacing over
-:rm_bs
-s#[^\x08]\x08##g; t rm_bs
 " |
 
 # Normalize the input before transformation
 sed "
-# escape HTML
-s#\&#\&amp;#g; s#>#\&gt;#g; s#<#\&lt;#g; s#\"#\&quot;#g
-
+# escape HTML (ampersand and quote done above)
+s#>#\&gt;#g; s#<#\&lt;#g;
+# handle truecolor
+s#${p}38;2;\([0-9]\{1,3\}\);\([0-9]\{1,3\}\);\([0-9]\{1,3\}\)m#\
+<span style=\"color:rgb(\1\,\2\,\3\)\">#g
+s#${p}48;2;\([0-9]\{1,3\}\);\([0-9]\{1,3\}\);\([0-9]\{1,3\}\)m#\
+<span style=\"background-color:rgb(\1\,\2\,\3\)\">#g
 # normalize SGR codes a little
-
 # split 256 colors out and mark so that they're not
 # recognised by the following 'split combined' line
 :e
 s#${p}\([0-9;]\{1,\}\);\([34]8;5;[0-9]\{1,3\}\)m#${p}\1m${p}¬\2m#g; t e
 s#${p}\([34]8;5;[0-9]\{1,3\}\)m#${p}¬\1m#g;
-
 :c
 s#${p}\([0-9]\{1,\}\);\([0-9;]\{1,\}\)m#${p}\1m${p}\2m#g; t c   # split combined
 s#${p}0\([0-7]\)#${p}\1#g                                 #strip leading 0
 s#${p}1m\(\(${p}[4579]m\)*\)#\1${p}1m#g                   #bold last (with clr)
 s#${p}m#${p}0m#g                                          #add leading 0 to norm
-
 # undo any 256 color marking
 s#${p}¬\([34]8;5;[0-9]\{1,3\}\)m#${p}\1m#g;
-
 # map 16 color codes to color + bold
 s#${p}9\([0-7]\)m#${p}3\1m${p}1m#g;
 s#${p}10\([0-7]\)m#${p}4\1m${p}1m#g;
-
-# change 'reset' code to a single char, and prepend a single char to
-# other codes so that we can easily do negative matching, as sed
-# does not support look behind expressions etc.
-s#°#\&deg;#g; s#${p}0m#°#g
-s#¡#\&iexcl;#g; s#${p}[0-9;]*m#¡&#g
+# change 'reset' code to \"R
+s#${p}0m#\"R;#g
 " |
 
 # Convert SGR sequences to HTML
 sed "
-:ansi_to_span # replace ANSI codes with CSS classes
-t ansi_to_span # hack so t commands below only apply to preceeding s cmd
-
-/^[^¡]*°/ { b span_end } # replace 'reset code' if no preceeding code
-
 # common combinations to minimise html (optional)
-s#${P}3\([0-7]\)m¡${p}4\([0-7]\)m#\1<span class=\"f\2 b\3\">#;t span_count
-s#${P}4\([0-7]\)m¡${p}3\([0-7]\)m#\1<span class=\"f\3 b\2\">#;t span_count
-
-s#${P}1m#\1<span class=\"bold\">#;                            t span_count
-s#${P}4m#\1<span class=\"underline\">#;                       t span_count
-s#${P}5m#\1<span class=\"blink\">#;                           t span_count
-s#${P}7m#\1<span class=\"reverse\">#;                         t span_count
-s#${P}9m#\1<span class=\"line-through\">#;                    t span_count
-s#${P}3\([0-9]\)m#\1<span class=\"f\2\">#;                    t span_count
-s#${P}4\([0-9]\)m#\1<span class=\"b\2\">#;                    t span_count
-
-s#${P}38;5;\([0-9]\{1,3\}\)m#\1<span class=\"ef\2\">#;        t span_count
-s#${P}48;5;\([0-9]\{1,3\}\)m#\1<span class=\"eb\2\">#;        t span_count
-
-s#${P}[0-9;]*m#\1#g; t ansi_to_span # strip unhandled codes
-
-b # next line of input
-
-# add a corresponding span end flag
-:span_count
-x; s/^/s/; x
-b ansi_to_span
-
-# replace 'reset code' with correct number of </span> tags
-:span_end
-x
-/^s/ {
-  s/^.//
-  x
-  s#°#</span>°#
-  b span_end
-}
-x
-s#°##
-b ansi_to_span
+:f
+s#${p}3[0-7]m${p}3\([0-7]\)m#${p}3\1m#g; t f
+:b
+s#${p}4[0-7]m${p}4\([0-7]\)m#${p}4\1m#g; t b
+s#${p}3\([0-7]\)m${p}4\([0-7]\)m#<span class=\"f\1 b\2\">#g
+s#${p}4\([0-7]\)m${p}3\([0-7]\)m#<span class=\"f\2 b\1\">#g
+s#${p}1m#<span class=\"bold\">#g
+s#${p}4m#<span class=\"underline\">#g
+s#${p}5m#<span class=\"blink\">#g
+s#${p}7m#<span class=\"reverse\">#g
+s#${p}9m#<span class=\"line-through\">#g
+s#${p}3\([0-9]\)m#<span class=\"f\1\">#g
+s#${p}4\([0-9]\)m#<span class=\"b\1\">#g
+s#${p}38;5;\([0-9]\{1,3\}\)m#<span class=\"ef\1\">#g
+s#${p}48;5;\([0-9]\{1,3\}\)m#<span class=\"eb\1\">#g
+s#${p}[0-9;]*m##g # strip unhandled codes
 " |
 
-# Convert alternative character set
+# Convert alternative character set and handle cursor movement codes
 # Note we convert here, as if we do at start we have to worry about avoiding
 # conversion of SGR codes etc., whereas doing here we only have to
 # avoid conversions of stuff between &...; or <...>
@@ -270,62 +281,217 @@ b ansi_to_span
 # Note we could use sed to do this based around:
 #   sed 'y/abcdefghijklmnopqrstuvwxyz{}`~/▒␉␌␍␊°±␤␋┘┐┌└┼⎺⎻─⎼⎽├┤┴┬│≤≥π£◆·/'
 # However that would be very awkward as we need to only conv some input.
-# The basic scheme that we do in the python script below is:
-#  1. enable transliterate once ¡ char seen
-#  2. disable once µ char seen (may be on diff line to ¡)
+# The basic scheme that we do in the awk script below is:
+#  1. enable transliterate once "T1; is seen
+#  2. disable once "T0; is seen (may be on diff line)
 #  3. never transliterate between &; or <> chars
+#  4. track x,y movements and active display mode at each position
+#  5. buffer line/screen and dump when required
 sed "
-# change 'smacs' and 'rmacs' to a single char so that we can easily do
-# negative matching, as sed does not support look behind expressions etc.
-# Note we don't use ° like above as that's part of the alternate charset.
-s#\x1b(0#¡#g;
-s#µ#\&micro;#g; s#\x1b(B#µ#g
+# change 'smacs' and 'rmacs' to \"T1 and \"T0 to simplify matching.
+s#\x1b(0#\"T1;#g;
+s#\x0E#\"T1;#g;
+s#\x1b(B#\"T0;#g
+s#\x0F#\"T0;#g
 " |
 (
-python -c "
-# vim:fileencoding=utf8
-
-import sys
-import locale
-encoding=locale.getpreferredencoding()
-
-old='abcdefghijklmnopqrstuvwxyz{}\`~'
-new='▒␉␌␍␊°±␤␋┘┐┌└┼⎺⎻─⎼⎽├┤┴┬│≤≥π£◆·'
-new=unicode(new, 'utf-8')
-table=range(128)
-for o,n in zip(old, new): table[ord(o)]=n
-
-(STANDARD, ALTERNATIVE, HTML_TAG, HTML_ENTITY) = (0, 1, 2, 3)
-
-state = STANDARD
-last_mode = STANDARD
-for c in unicode(sys.stdin.read(), encoding):
-  if state == HTML_TAG:
-    if c == '>':
-      state = last_mode
-  elif state == HTML_ENTITY:
-    if c == ';':
-      state = last_mode
-  else:
-    if c == '<':
-      state = HTML_TAG
-    elif c == '&':
-      state = HTML_ENTITY
-    elif c == u'¡' and state == STANDARD:
-      state = ALTERNATIVE
-      last_mode = ALTERNATIVE
-      continue
-    elif c == u'µ' and state == ALTERNATIVE:
-      state = STANDARD
-      last_mode = STANDARD
-      continue
-    elif state == ALTERNATIVE:
-      c = c.translate(table)
-  sys.stdout.write(c.encode(encoding))
-" 2>/dev/null ||
-sed 's/[¡µ]//g' # just strip aternative flag chars
+gawk '
+function dump_line(l,del,c,blanks,ret) {
+  for(c=1;c<maxX;c++) {
+    if ((c SUBSEP l) in attr || length(cur)) {
+      ret = ret blanks fixas(cur,attr[c,l])
+      if(del) delete attr[c,l]
+      blanks=""
+    }
+    if ((c SUBSEP l) in dump) {
+      ret=ret blanks dump[c,l]
+      if(del) delete dump[c,l]
+      blanks=""
+    } else blanks=blanks " "
+  }
+  if(length(cur)) ret=ret blanks
+  return ret
+}
+function dump_screen(l,ret) {
+  for(l=1;l<=maxY;l++)
+    ret=ret dump_line(l,0) "\n"
+  return ret fixas(cur, "")
+}
+function atos(a,i,ret) {
+  for(i=1;i<=length(a);i++) if(i in a) ret=ret a[i]
+  return ret
+}
+function fixas(a,s,spc,i,attr,rm,ret) {
+  spc=length(a)
+  l=split(s,attr,">")
+  for(i=1;i<=spc;i++) {
+    rm=rm?rm:(a[i]!=attr[i]">")
+    if(rm) {
+      ret=ret "</span>"
+      delete a[i];
+    }
+  }
+  for(i=1;i<l;i++) {
+    attr[i]=attr[i]">"
+    if(a[i]!=attr[i]) {
+      a[i]=attr[i]
+      ret = ret attr[i]
+    }
+  }
+  return ret
+}
+function encode(string,start,end,i,ret,pos,sc,buf) {
+   if(!end) end=length(string);
+   if(!start) start=1;
+   state=3
+   for(i=1;i<=length(string);i++) {
+     c=substr(string,i,1)
+     if(state==2) {
+       sc=sc c
+       if(c==";") {
+          c=sc
+          state=last_mode
+       } else continue
+     } else {
+       if(c=="\r") { x=1; continue }
+       if(c=="<") {
+         # Change attributes - store current active
+         # attributes in span array
+         split(substr(string,i),cord,">");
+         i+=length(cord[1])
+         span[++spc]=cord[1] ">"
+         continue
+       }
+       else if(c=="&") {
+         # All goes to single position till we see a semicolon
+         sc=c
+         state=2
+         continue
+       }
+       else if(c=="\b") {
+          # backspace move insertion point back 1
+          if(spc) attr[x,y]=atos(span)
+          x=x>1?x-1:1
+          continue
+       }
+       else if(c=="\"") {
+          split(substr(string,i+2),cord,";")
+          cc=substr(string,i+1,1);
+          if(cc=="T") {
+              # Transliterate on/off
+              if(cord[1]==1&&state==3) last_mode=state=4
+              if(cord[1]==0&&state==4) last_mode=state=3
+          }
+          else if(cc=="C") {
+              # Clear
+              if(cord[1]+0) {
+                # Screen - if Recording dump screen
+                if(dumpStatus==dsActive) ret=ret dump_screen()
+                dumpStatus=dsActive
+                delete dump
+                delete attr
+                x=y=1
+              } else {
+                # To end of line
+                for(pos=x;pos<maxX;pos++) {
+                  dump[pos,y]=" "
+                  if (!spc) delete attr[pos,y]
+                  else attr[pos,y]=atos(span)
+                }
+              }
+          }
+          else if(cc=="J") {
+              # Jump to x,y
+              i+=length(cord[2])+1
+              # If line is higher - dump previous screen
+              if(dumpStatus==dsActive&&cord[1]<y) {
+                ret=ret dump_screen();
+                dumpStatus=dsNew;
+              }
+              x=cord[2]
+              if(length(cord[1]) && y!=cord[1]){
+                y=cord[1]
+                if(y>maxY) maxY=y
+                # Change y - start recording
+                dumpStatus=dumpStatus?dumpStatus:dsReset
+              }
+          }
+          else if(cc=="M") {
+              # Move left/right on current line
+              x+=cord[1]
+          }
+          else if(cc=="X") {
+              # delete on right
+              for(pos=x;pos<=maxX;pos++) {
+                nx=pos+cord[1]
+                if(nx<maxX) {
+                  if((nx SUBSEP y) in attr) attr[pos,y] = attr[nx,y]
+                  else delete attr[pos,y]
+                  if((nx SUBSEP y) in dump) dump[pos,y] = dump[nx,y]
+                  else delete dump[pos,y]
+                } else if(spc) {
+                  attr[pos,y]=atos(span)
+                  dump[pos,y]=" "
+                }
+              }
+          }
+          else if(cc=="R") {
+              # Reset attributes
+              while(spc) delete span[spc--]
+          }
+          i+=length(cord[1])+2
+          continue
+       }
+       else if(state==4&&i>=start&&i<=end&&c in Trans) c=Trans[c]
+     }
+     if(dumpStatus==dsReset) {
+       delete dump
+       delete attr
+       ret=ret"\n"
+       dumpStatus=dsActive
+     }
+     if(dumpStatus==dsNew) {
+       # After moving/clearing we are now ready to write
+       # somthing to the screen so start recording now
+       ret=ret"\n"
+       dumpStatus=dsActive
+     }
+     if(dumpStatus==dsActive||dumpStatus==dsOff) {
+       dump[x,y] = c
+       if(!spc) delete attr[x,y]
+       else attr[x,y] = atos(span)
+       if(++x>maxX) maxX=x;
+     }
+    }
+    # End of line if dumping increment y and set x back to first col
+    x=1
+    if(!dumpStatus) return ret dump_line(y,1);
+    else if(++y>maxY) maxY=y;
+    return ret
+}
+BEGIN{
+  OFS=FS
+  # dump screen status
+  dsOff=0    # Not dumping screen contents just write output direct
+  dsNew=1    # Just after move/clear waiting for activity to start recording
+  dsReset=2  # Screen cleared build new empty buffer and record
+  dsActive=3 # Currently recording
+  F="abcdefghijklmnopqrstuvwxyz{}`~"
+  T="▒␉␌␍␊°±␤␋┘┐┌└┼⎺⎻─⎼⎽├┤┴┬│≤≥π£◆·"
+  maxX=80
+  delete cur;
+  x=y=1
+  for(i=1;i<=length(F);i++)Trans[substr(F,i,1)]=substr(T,i,1);
+}
+{ $0=encode($0) }
+1
+END {
+  if(dumpStatus) {
+    print dump_screen();
+  }
+}'
 )
 
-echo "</pre>
+[ "$body_only" ] || printf '</pre>
 </body>
-</html>"
+</html>\n'

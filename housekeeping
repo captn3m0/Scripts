@@ -11,9 +11,11 @@ find $PERSONAL_ROOT -maxdepth 2 -type d -iname .git  | xargs -I{} bash -c  "cd {
 # Cleanup yay-cache
 find /home/nemo/.cache/yay -iregex '.*\.\(bz2\|tar\|zip\|deb\|xz\|gz\)$' -delete
 
-
 # Remove orphan packages
-pacman -Rns $(pacman -Qtdq)
+sudo pacman -Rns $(pacman -Qtdq)
+
+# Delete pacman cache files older than 7 days
+sudo find /var/cache/pacman/pkg -maxdepth 1 -mindepth 1 -mtime +7 -delete
 
 # Clear systemd logs
 sudo journalctl --vacuum-size=100M
@@ -25,8 +27,8 @@ sudo docker system prune -af
 echo "Going to try stuff that needs network access now"
 
 # Push passwords to keybase
-pass git push
+pass git 'push origin master'
 
 # Sync mobile passwords
 cd /home/nemo/projects/personal/mobile-passwords
-git from && ./runme.sh && git push
+git from && ./runme.sh && git push origin master

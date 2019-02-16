@@ -27,8 +27,8 @@ sudo docker system prune -af
 echo "Going to try stuff that needs network access now"
 
 # Push passwords to keybase
-pass git 'push origin master'
+pass git pushall
 
 # Sync mobile passwords
 cd /home/nemo/projects/personal/mobile-passwords
-git from && ./runme.sh && git push origin master
+git from && ./runme.sh && git pushall

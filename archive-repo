@@ -1,0 +1,11 @@
+#/bin/bash
+ORG=$1
+REPO=$2
+REPOSITORY="$1/$2"
+BRANCH=master
+git checkout --orphan $REPO
+git remote add -f $REPO git@github.com:$ORG/$REPO.git
+git reset --hard $REPO/$BRANCH
+git remote rm $REPO
+git push origin $REPO
+git checkout master

@@ -32,3 +32,20 @@ pass git pushall
 # Sync mobile passwords
 cd /home/nemo/projects/personal/mobile-passwords
 git from && ./runme.sh && git pushall
+
+# Sync mobile passwords
+pushd /home/nemo/projects/personal/mobile-passwords
+git from && ./runme.sh && git push origin master
+popd
+
+# Generate a blacklist hosts file
+if ping -c 1 192.168.1.1 &> /dev/null
+then
+  # Generate the Blacklist
+  pushd /home/nemo/projects/personal/dnscrypt-proxy/contrib/
+  python2 ./generate-domains-blacklist.py > blacklist.txt
+  blacklist2hosts.php blacklist.txt hosts
+  popd
+else
+  echo 0
+fi

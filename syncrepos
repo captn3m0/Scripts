@@ -1,0 +1,29 @@
+#!/bin/sh
+
+PATH=$PATH:/home/nemo/projects/scripts/
+
+function sync_repo() {
+	pushd $1
+	git config --bool branch.master.sync true
+	git config --bool branch.master.syncNewFiles true
+	git-sync
+	popd
+}
+
+# xpad-notes
+sync_repo /home/nemo/.config/xpad yes
+# passwords
+sync_repo /home/nemo/.password-store
+
+CWD1=`pwd`
+# mobile-passwords
+cd /home/nemo/projects/personal/mobile-passwords
+./runme.sh
+sync_repo /home/nemo/projects/personal/mobile-passwords
+cd $CWD1
+
+# TODO:
+# scripts?: NO
+# imapfilter: YES
+# /etc: YES
+# dotfiles: NO

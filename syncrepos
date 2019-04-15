@@ -17,10 +17,8 @@ sync_repo /home/nemo/.password-store
 
 CWD1=`pwd`
 # mobile-passwords
-cd /home/nemo/projects/personal/mobile-passwords
-./runme.sh
+cp -r /home/nemo/.password-store/mobile-sync/*.gpg /home/nemo/projects/personal/mobile-passwords/
 sync_repo /home/nemo/projects/personal/mobile-passwords
-cd $CWD1
 
 # TODO:
 # scripts?: NO

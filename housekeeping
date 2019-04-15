@@ -42,10 +42,9 @@ popd
 if ping -c 1 192.168.1.1 &> /dev/null
 then
   # Generate the Blacklist
-  pushd /home/nemo/projects/personal/dnscrypt-proxy/contrib/
+  pushd /home/nemo/projects/personal/dnscrypt-proxy/utils/generate-domains-blacklists
   python2 ./generate-domains-blacklist.py > blacklist.txt
-  blacklist2hosts.php blacklist.txt hosts
   popd
-else
-  echo 0
+
+  # TODO: Copy it across to the router
 fi

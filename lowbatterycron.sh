@@ -5,6 +5,7 @@ BATTERY=/sys/class/power_supply/BAT0
 REM=`grep "POWER_SUPPLY_CHARGE_NOW" $BATTERY/uevent | awk -F= '{ print $2 }'`
 FULL=`grep "POWER_SUPPLY_CHARGE_FULL_DESIGN" $BATTERY/uevent | awk -F= '{ print $2 }'`
 PERCENT=`echo $(( $REM * 100 / $FULL ))`
+# Put the below 2 in your crontab
 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 XAUTHORITY=/home/nemo/.Xauthority
 

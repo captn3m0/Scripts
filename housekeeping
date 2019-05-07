@@ -26,17 +26,8 @@ sudo docker system prune -af
 ## KEEP ALL NETWORK RELATED STUFF BELOW THIS
 echo "Going to try stuff that needs network access now"
 
-# Push passwords to keybase
-pass git pushall
-
-# Sync mobile passwords
-cd /home/nemo/projects/personal/mobile-passwords
-git from && ./runme.sh && git pushall
-
-# Sync mobile passwords
-pushd /home/nemo/projects/personal/mobile-passwords
-git from && ./runme.sh && git push origin master
-popd
+# Sync git repositories
+syncrepos
 
 # Generate a blacklist hosts file
 if ping -c 1 192.168.1.1 &> /dev/null

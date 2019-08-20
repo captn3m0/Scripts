@@ -43,10 +43,10 @@ lock() {
 	foreground=ffffffff
 	i3lock \
 		-t -i "$1" \
-		--timepos="110:h-70" \
-		--datepos="135:h-45" \
+		# --timepos="110:h-70" \
+		# --datepos="135:h-45" \
 		--screen=0 \
-		--clock --datestr "Type password to unlock..." \
+		# --clock --datestr "Type password to unlock..." \
 		# --blur=sigma \
 		# --insidecolor=$background \
 		# --ringcolor=$foreground \

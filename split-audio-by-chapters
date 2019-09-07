@@ -1,0 +1,53 @@
+#!/bin/bash
+IFS=$'\n\t'
+
+# Author: http://crunchbang.org/forums/viewtopic.php?id=38748#p414992
+# m4bronto
+# https://gist.github.com/dcondrey/469e2850e7f88ac198e8c3ff111bda7c
+# Modified to support a chapters.txt file with sequential list of chapter names
+# Run as split-audio-by-chapters file.m4a [chapters.txt]
+# Output files are sequential and generated
+
+
+# https://stackoverflow.com/a/3352015
+trim() {
+    local var="$*"
+    # remove leading whitespace characters
+    var="${var#"${var%%[![:space:]]*}"}"
+    # remove trailing whitespace characters
+    var="${var%"${var##*[![:space:]]}"}"   
+    echo -n "$var"
+}
+
+CHAPTER_INDEX=0
+
+if [ -f "$2" ]; then
+  echo "Reading chapters from $2"
+  readarray CHAPTERS < "$2"
+  IFS=$'\n\r'
+  CHAPTERS_TITLES_LENGTH=${#CHAPTERS[@]}
+  IFS=$'\n\t'
+fi
+
+ffmpeg -i "$1" 2> /tmp/ffmpeg.txt
+
+while read -r first _ _ start _ end; do
+  unset IFS
+  if [[ "$first" = "Chapter" ]]; then
+    read
+    read _ _ CHAPTER_TITLE
+
+    CHAPTER_INDEX_PADDED=$(printf "%03d" "$CHAPTER_INDEX")
+
+    # If we are using a chapters.txt that is valid
+    if ((CHAPTERS_TITLES_LENGTH >= CHAPTER_INDEX)) ; then
+      CHAPTER_TITLE=${CHAPTERS[$CHAPTER_INDEX]}
+    fi
+
+    FILENAME="${CHAPTER_INDEX_PADDED} - $(trim "$CHAPTER_TITLE").m4a"
+
+    ffmpeg -vsync 2 -i "$1" -ss "${start%?}" -to "$end" -vn -acodec copy "$FILENAME" </dev/null
+
+    ((CHAPTER_INDEX++))
+  fi
+done </tmp/ffmpeg.txt

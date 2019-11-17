@@ -1,0 +1,12 @@
+#!/bin/bash
+ORG=$1
+REPO=$2
+mkdir $REPO
+pushd $REPO
+touch README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/$ORG/$REPO.git
+git push -u origin master
+popd

@@ -42,10 +42,14 @@ lock() {
 	background=00000000
 	foreground=ffffffff
 	i3lock \
-		-t -i "$1" \
+		-t -i "$1"
+		# --force-clock
+		# --screen=0 \
+        # --bar-indicator --bar-direction=0 \
+		# --timecolor="$foreground" --datecolor="$foreground" \
+        # --noinputtext="" \
 		# --timepos="110:h-70" \
 		# --datepos="135:h-45" \
-		--screen=0 \
 		# --clock --datestr "Type password to unlock..." \
 		# --blur=sigma \
 		# --insidecolor=$background \
@@ -57,10 +61,6 @@ lock() {
 		# --indpos="x+280:h-70" \
 		# --radius=20 --ring-width=4 --veriftext="" --wrongtext="" \
 		# --verifcolor="$foreground" \
-		--timecolor="$foreground" --datecolor="$foreground" \
-        --noinputtext="" \
-        --bar-indicator --bar-direction=0 \
-		--force-clock
 }
 
 postlock() {

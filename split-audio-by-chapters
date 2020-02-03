@@ -22,11 +22,14 @@ trim() {
 CHAPTER_INDEX=0
 
 if [ -f "$2" ]; then
+  CHAPTERS_FILE_PASSED=1
   echo "Reading chapters from $2"
   readarray CHAPTERS < "$2"
   IFS=$'\n\r'
   CHAPTERS_TITLES_LENGTH=${#CHAPTERS[@]}
   IFS=$'\n\t'
+else
+  CHAPTERS_FILE_PASSED=0
 fi
 
 ffmpeg -i "$1" 2> /tmp/ffmpeg.txt
@@ -37,10 +40,11 @@ while read -r first _ _ start _ end; do
     read
     read _ _ CHAPTER_TITLE
 
-    CHAPTER_INDEX_PADDED=$(printf "%03d" "$CHAPTER_INDEX")
+    REAL_CHAPTER_INDEX=$((CHAPTER_INDEX+1))
+    CHAPTER_INDEX_PADDED=$(printf "%03d" "${REAL_CHAPTER_INDEX}")
 
     # If we are using a chapters.txt that is valid
-    if ((CHAPTERS_TITLES_LENGTH >= CHAPTER_INDEX)) ; then
+    if ((CHAPTERS_FILE_PASSED=="1")) ; then
       CHAPTER_TITLE=${CHAPTERS[$CHAPTER_INDEX]}
     fi
 

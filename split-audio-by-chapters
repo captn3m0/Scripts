@@ -50,7 +50,7 @@ while read -r first _ _ start _ end; do
 
     FILENAME="${CHAPTER_INDEX_PADDED} - $(trim "$CHAPTER_TITLE").m4a"
 
-    ffmpeg -vsync 2 -i "$1" -ss "${start%?}" -to "$end" -vn -acodec copy "$FILENAME" </dev/null
+    ffmpeg -vsync 2 -i "$1" -ss "${start%?}" -to "$end" -vn -metadata title="$CHAPTER_TITLE" -acodec copy "$FILENAME" </dev/null
 
     ((CHAPTER_INDEX++))
   fi

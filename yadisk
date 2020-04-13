@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Run as yadisk "https://yadi.sk/...." [wget-options go here]
+# eg: yadisk https://yadi.sk/i/gQpV5T7c3Ncvp4 -O file.png --quiet --no-clobber
+
+LINK=$(curl "https://cloud-api.yandex.net:443/v1/disk/public/resources/download?public_key=$1" | jq -r '.href')
+shift
+if [[ "$LINK" != "null" ]]; then
+	wget --no-verbose "$LINK" "$@"
+fi

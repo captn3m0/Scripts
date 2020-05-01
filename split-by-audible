@@ -1,0 +1,61 @@
+#!/usr/bin/php
+<?php
+
+/**
+
+This script generates split-audiobook files for each track using a copy-pasted version
+of the Audible tracklist from the Audible web player
+
+The file format is:
+
+CHAPTER1
+01:25:50
+Chapter 2 title goes here
+00:01:12
+Chapter 3 title goes here
+01:25:54
+End Credits
+00:00:59
+
+This is exactly what you'll get if you copy-paste the listing from the web player.
+
+Unfortunately, I've found that for very long Audiobooks, this isn't precise enough and the errors add up.
+*/
+
+$INPUT_FILE=$argv[1];
+$listing=$argv[2];
+
+$startTime = 0;
+$inputData = file($listing);
+
+$endingDuration = '00:00:00';
+
+$chapterId = 1;
+
+function timeStampToSeconds($str_time) {
+	sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+	return isset($hours) ? $hours * 3600 + $minutes * 60 + $seconds : $minutes * 60 + $seconds;
+}
+
+for($i = 0;$i<count($inputData);$i++) {
+
+	// This chapter starts at the ending time of the previous one.
+	$startTime = $startTime + timeStampToSeconds($endingDuration);
+
+	// Get the chapter name
+	$chapter = trim($inputData[$i]);
+	// Get the ending time and advance the line
+	$endingDuration = trim($inputData[++$i]);
+
+	$endTime = $startTime + timeStampToSeconds($endingDuration);
+
+	$index = str_pad($chapterId, 3, '0', STR_PAD_LEFT);
+	$title = "$index - $chapter";
+	echo "$title ($startTime - $endTime)\n";
+
+	$filename = "$title.m4a";
+
+	`ffmpeg -hide_banner -loglevel panic -vsync 2 -i "$INPUT_FILE" -dn -sn -ss "$startTime" -to "$endTime" -vn -metadata title="$title" -acodec copy "$filename" </dev/null`
+
+	$chapterId++;
+}

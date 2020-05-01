@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Updates koreader
+
+KINDLE_MOUNT_PATH=/run/media/nemo/Kindle
+GITHUB_RELEASE_URL=https://api.github.com/repos/koreader/koreader/releases/latest
+STORAGE_DIRECTORY=/home/nemo/Setups/Kindle
+
+curl --silent $GITHUB_RELEASE_URL > /tmp/koreader.json
+
+DOWNLOAD_URL=$(cat /tmp/koreader.json | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.browser_download_url')
+FILE_NAME=$(cat /tmp/koreader.json | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.name')
+
+echo "Latest version is $FILE_NAME"
+
+wget --no-clobber --directory-prefix="$STORAGE_DIRECTORY" "$DOWNLOAD_URL"
+
+if [[ -d "$KINDLE_MOUNT_PATH" ]]; then
+  if [[ $@ == *'--please'* ]]; then
+    unzip -uqqo "$STORAGE_DIRECTORY/$FILE_NAME" -d "$KINDLE_MOUNT_PATH"
+    echo "Kindle KOReader has been upgraded to $FILE_NAME"
+  else
+    echo "Kindle is mounted, pass --please to actually upgrade"
+  fi
+fi

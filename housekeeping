@@ -28,14 +28,3 @@ echo "Going to try stuff that needs network access now"
 
 # Sync git repositories
 syncrepos
-
-# Generate a blacklist hosts file
-if ping -c 1 192.168.1.1 &> /dev/null
-then
-  # Generate the Blacklist
-  pushd /home/nemo/projects/personal/dnscrypt-proxy/utils/generate-domains-blacklists
-  python2 ./generate-domains-blacklist.py > blacklist.txt
-  scp blacklist.txt root@192.168.1.1:/etc/config/blacklist.txt
-  echo "Generated and copied across blacklist to Router"
-  popd
-fi

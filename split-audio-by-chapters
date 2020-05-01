@@ -50,7 +50,14 @@ while read -r first _ _ start _ end; do
 
     FILENAME="${CHAPTER_INDEX_PADDED} - $(trim "$CHAPTER_TITLE").m4a"
 
-    ffmpeg -vsync 2 -i "$1" -ss "${start%?}" -to "$end" -vn -metadata title="$CHAPTER_TITLE" -acodec copy "$FILENAME" </dev/null
+    # -vsync 2 = Frames are passed through with their timestamp or dropped so as to prevent 2 frames from having the same timestamp.
+    # -sn = no subtitles
+    # -dn = no data stream
+    # -vn = no video stream
+    # -metadata title= put in a chapter title
+    # -acodec copy = copy the audio stream
+    ffmpeg -hide_banner -loglevel panic \
+      -vsync 2 -sn -dn -vn -i "$1" -ss "${start%?}" -to "$end" -metadata title="$CHAPTER_TITLE" -dn -vn -sn -acodec copy "$FILENAME" </dev/null
 
     ((CHAPTER_INDEX++))
   fi

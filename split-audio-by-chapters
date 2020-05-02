@@ -15,7 +15,7 @@ trim() {
     # remove leading whitespace characters
     var="${var#"${var%%[![:space:]]*}"}"
     # remove trailing whitespace characters
-    var="${var%"${var##*[![:space:]]}"}"   
+    var="${var%"${var##*[![:space:]]}"}"
     echo -n "$var"
 }
 
@@ -26,7 +26,6 @@ if [ -f "$2" ]; then
   echo "Reading chapters from $2"
   readarray CHAPTERS < "$2"
   IFS=$'\n\r'
-  CHAPTERS_TITLES_LENGTH=${#CHAPTERS[@]}
   IFS=$'\n\t'
 else
   CHAPTERS_FILE_PASSED=0
@@ -37,8 +36,8 @@ ffmpeg -i "$1" 2> /tmp/ffmpeg.txt
 while read -r first _ _ start _ end; do
   unset IFS
   if [[ "$first" = "Chapter" ]]; then
-    read
-    read _ _ CHAPTER_TITLE
+    read -r
+    read -r _ _ CHAPTER_TITLE
 
     REAL_CHAPTER_INDEX=$((CHAPTER_INDEX+1))
     CHAPTER_INDEX_PADDED=$(printf "%03d" "${REAL_CHAPTER_INDEX}")

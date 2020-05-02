@@ -1,9 +1,17 @@
 #!/bin/bash
+
+if [[ "$1"=="" || "$2"=="" ]]; then
+  echo "Run as gitub-init-repo org repo"
+  exit 1
+fi
+
+
 ORG=$1
 REPO=$2
 mkdir $REPO
 pushd $REPO
 touch README.md
+hub create -p $ORG/$REPO
 git init
 git add README.md
 git commit -m "first commit"

@@ -1,7 +1,10 @@
 #!/bin/bash
 
-CMD=urxvtc
+CMD=alacritty
 CWD=''
+
+$CMD
+exit
 
 # Get window ID
 ID=$(xdpyinfo | grep focus | cut -f4 -d " ")

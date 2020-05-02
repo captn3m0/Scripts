@@ -1,5 +1,7 @@
 #!/usr/bin/env php
 <?php
+// https://github.com/Zigazou/ccg
+// GNU GPL v3
 // Determines which function names should be ignored in the resulting graph
 $ignphp = FALSE;
 $igndrupal = FALSE;
@@ -38,7 +40,7 @@ for($i = 0; $i < count($tks); $i++) {
       if($depth <= 0) $cur = 'SCRIPT';
       break;
 
-    // Function definition    
+    // Function definition
     case T_FUNCTION:
       $i += 1;
       $cur = $tks[$i][1];

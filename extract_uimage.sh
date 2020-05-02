@@ -2,6 +2,7 @@
 
 #
 # Copyright (C) 2010 Matthias Buecher (http://www.maddes.net/)
+# Source: https://github.com/mpoullet/shell_examples/blob/master/extract_uImage.sh
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,6 +67,6 @@ MAGIC=`dd if="${DATAFILE}" ibs=4 skip=9 count=1 | hexdump -v -e '1/1 "%02X"'`
 	echo "zImage recognized with start 0x${START}, end 0x${END} and size ${SIZE}."
 	TMPFILE='zImage'
 }
-mv "${DATAFILE}" "${TMPFILE}" 
+mv "${DATAFILE}" "${TMPFILE}"
 
 echo ">>> ${UIMAGE} extracted to ${TMPFILE}"

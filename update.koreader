@@ -5,11 +5,12 @@
 KINDLE_MOUNT_PATH=/run/media/nemo/Kindle
 GITHUB_RELEASE_URL=https://api.github.com/repos/koreader/koreader/releases/latest
 STORAGE_DIRECTORY=/home/nemo/Setups/Kindle
+JSON_PATH="/tmp/koreader.json"
 
-curl --silent $GITHUB_RELEASE_URL > /tmp/koreader.json
+curl --silent $GITHUB_RELEASE_URL > "$JSON_PATH"
 
-DOWNLOAD_URL=$(cat /tmp/koreader.json | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.browser_download_url')
-FILE_NAME=$(cat /tmp/koreader.json | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.name')
+DOWNLOAD_URL=$(cat "$JSON_PATH" | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.browser_download_url')
+FILE_NAME=$(cat "$JSON_PATH" | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.name')
 
 echo "Latest version is $FILE_NAME"
 
@@ -23,3 +24,5 @@ if [[ -d "$KINDLE_MOUNT_PATH" ]]; then
     echo "Kindle is mounted, pass --please to actually upgrade"
   fi
 fi
+
+rm -f "$JSON_PATH"

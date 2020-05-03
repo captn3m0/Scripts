@@ -1,5 +1,0 @@
-#!/bin/bash
-
-sudo rmmod sdhci-pci sdhci
-sudo modprobe sdhci debug_quirks2=4
-sudo modprobe sdhci-pci

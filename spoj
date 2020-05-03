@@ -1,4 +1,0 @@
-#!/bin/bash
-problem=$1
-g++ $1.cpp -o $1; ./$1 < $1.IN > $1.OUT
-diff $1.TXT $1.OUT

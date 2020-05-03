@@ -1,4 +1,5 @@
 #!/bin/sh
+# The output for this will likely be pulseaudio
 for i in /proc/[0-9]*/fd/*
 do
     var="$(readlink $i)"

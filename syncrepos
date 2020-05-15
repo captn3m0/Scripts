@@ -3,11 +3,13 @@
 PATH=$PATH:/home/nemo/projects/scripts/
 
 function sync_repo() {
-	pushd $1
-	git config --bool branch.master.sync true
-	git config --bool branch.master.syncNewFiles true
-	git-sync
-	popd
+  if [[ -d "$1" ]]; then
+    pushd $1
+    git config --bool branch.master.sync true
+    git config --bool branch.master.syncNewFiles true
+    git-sync
+    popd
+  fi
 }
 
 # xpad-notes

@@ -1,3 +1,5 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
 find . -iname "*.cbr" -print0 |xargs -0 -L1 -I {} ebook-convert '{}' .pdf --dont-grayscale

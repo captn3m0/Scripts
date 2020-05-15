@@ -1,8 +1,9 @@
 #!/bin/bash
-
 set -euo pipefail
-gettoken () 
-{ 
+IFS=$'\n\t'
+
+gettoken ()
+{
     export "`basename $1`"="$(pass show $1)"
 }
 
@@ -44,7 +45,7 @@ if [[ $update == *"\"success\":false"* ]]; then
     message="API UPDATE FAILED. DUMPING RESULTS:\n$update"
     log "$message"
     echo -e "$message"
-    exit 1 
+    exit 1
 else
     message="IP changed to: $IP"
     echo "$IP" > $IP_FILE

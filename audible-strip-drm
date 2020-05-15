@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
 docker run -v $(pwd):/data ryanfb/inaudible@sha256:b66738d235be1007797e3a0a0ead115fa227e81e2ab5b7befb97d43f7712fac5

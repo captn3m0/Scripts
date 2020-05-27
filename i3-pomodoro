@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+# Source: https://github.com/rkashapov/i3blocks-pomodoro
+#
+# MIT License
+#
+# Copyright (c) 2019 Rustam Kashapov
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""
+Simple Pomodoro app inspired by spt project.
+The app designed to be used with i3blocks.
+"""
+
+import errno
+import os
+import socket
+from itertools import cycle
+from subprocess import call
+from time import sleep
+from threading import Thread
+
+
+def notify(text):
+    call(["notify-send", "Pomodoro", text])
+
+
+def daemonize():
+    if os.fork() > 0:
+        exit()
+    os.setsid()
+    if os.fork() > 0:
+        exit()
+
+
+class AlredyStartedError(Exception):
+    pass
+
+
+class Cycle:
+    def __init__(self, items):
+        self._items = items
+        self._iter = None
+        self.reset()
+
+    def reset(self):
+        self._iter = cycle(self._items)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._iter)
+
+
+class Pomodoro:
+    def __init__(self, cycle):
+        self._cycle = cycle
+        self._state = "Paused"
+        self._remaining = 0
+        self._do_reset = False
+        self._running = False
+
+    @property
+    def state(self):
+        state = self._state
+        if not self._running:
+            state = "Paused"
+        minutes, seconds = divmod(self._remaining, 60)
+        return "{0} {1:02d}:{2:02d}".format(state, minutes, seconds)
+
+    def toggle(self):
+        self._running = not self._running
+
+    def reset(self):
+        self._do_reset = True
+        self._cycle.reset()
+
+    def start(self):
+        for timeout, state, message in self._cycle:
+            if self._do_reset:
+                self._do_reset = False
+
+            if self._running:
+                self._state = state
+                notify(message)
+
+            self._remaining = timeout * 60
+            while self._remaining:
+                if self._do_reset:
+                    break
+                sleep(1)
+                if self._running:
+                    self._remaining -= 1
+                    self._state = state
+
+
+class App:
+    ADDRESS = '/tmp/pomodoro.sock'
+    PAUSE = b"pause"
+    RESET = b"reset"
+    DISPLAY = b"display"
+
+    def __init__(self, pomodoro):
+        self._thread = Thread(target=self._handle_connections)
+        self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._pomodoro = pomodoro
+
+    def run(self):
+        try:
+            self._sock.bind(self.ADDRESS)
+        except socket.error as e:
+            if e.errno != errno.EADDRINUSE:
+                raise e
+
+            try:
+                self._sock.connect(self.ADDRESS)
+            except socket.error as err:
+                if err.errno != errno.ECONNREFUSED:
+                    raise e
+                os.unlink(self.ADDRESS)
+                self._sock.bind(self.ADDRESS)
+            else:
+                raise AlredyStartedError()
+
+        daemonize()
+
+        Thread(target=self._pomodoro.start).start()
+        self._handle_connections()
+
+    def display(self):
+        self._send(self.DISPLAY)
+
+    def toggle(self):
+        self._send(self.PAUSE)
+
+    def reset(self):
+        self._send(self.RESET)
+
+    def _send(self, command):
+        self._sock.sendall(command)
+        print(self._sock.recv(32).decode("utf-8"))
+
+    def _handle_connections(self):
+        self._sock.listen()
+        while True:
+            conn, _ = self._sock.accept()
+            command = conn.recv(16)
+            if command == self.PAUSE:
+                self._pomodoro.toggle()
+            elif command == self.RESET:
+                self._pomodoro.reset()
+
+            conn.sendall(self._pomodoro.state.encode("utf-8"))
+            conn.close()
+
+
+app = App(
+    Pomodoro(
+        Cycle(
+            [
+                (25, "Working", "Time to start working!"),
+                (5, "Resting", "Time to start resting!"),
+                (25, "Working", "Time to start working!"),
+                (5, "Resting", "Time to start resting!"),
+                (25, "Working", "Time to start working!"),
+                (5, "Resting", "Time to start resting!"),
+                (25, "Working", "Time to start working!"),
+                (15, "Long Break", "Time to take some nap!"),
+            ]
+        )
+    )
+)
+
+
+if __name__ == "__main__":
+    try:
+        app.run()
+    except AlredyStartedError:
+        button = os.getenv("BLOCK_BUTTON", "").lower()
+        if button == "1":
+            app.toggle()
+        elif button == "3":
+            app.reset()
+        else:
+            app.display()

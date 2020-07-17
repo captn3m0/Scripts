@@ -55,7 +55,6 @@ for($i = 0;$i<count($inputData);$i++) {
 
 	$filename = "$title.m4a";
 
-	`ffmpeg -hide_banner -loglevel panic -vsync 2 -i "$INPUT_FILE" -dn -sn -ss "$startTime" -to "$endTime" -vn -metadata title="$title" -acodec copy "$filename" </dev/null`
-
+	`ffmpeg -hide_banner -loglevel panic -vsync 2 -i "$INPUT_FILE" -dn -sn -ss "$startTime" -to "$endTime" -vn -metadata title="$title" -acodec copy "$filename" </dev/null`;
 	$chapterId++;
 }

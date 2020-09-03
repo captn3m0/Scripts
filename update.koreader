@@ -14,7 +14,7 @@ FILE_NAME=$(cat "$JSON_PATH" | jq --raw-output '.assets[] |select(.name | contai
 
 echo "Latest version is $FILE_NAME"
 
-wget --no-clobber --directory-prefix="$STORAGE_DIRECTORY" "$DOWNLOAD_URL"
+wget --no-clobber --directory-prefix="$STORAGE_DIRECTORY" "$DOWNLOAD_URL" --output-file "$FILE_NAME"
 
 if [[ -d "$KINDLE_MOUNT_PATH" ]]; then
   if [[ $@ == *'--please'* ]]; then

@@ -20,14 +20,8 @@ do
 		echo "-k keep originals"
 		exit 0
 		;;
-#		"o")
-#			open_flag="true"
-#			;;
 	esac
 done
-
-#exec > >( lolcat )			# send stdout to lolcat
-#exec 2>&1					# merge stderr into stdout
 
 echo "Running: zip -$remove_flag$recursive_flag$test_flag$compression out.cbz in -x *.DS_Store *[Tt]humbs.db"
 
@@ -38,15 +32,8 @@ do
 		if [[ -d $target ]]
 		then
 			echo "Archiving \"$target\""
-			# -m delete originals, -r recursive, -T test zip, -9 maximum compression, -x exclude list
 			zip -"$remove_flag$recursive_flag$test_flag$compression" "$target.cbz" "$target" -x "*.DS_Store" "*[Tt]humbs.db"
-			
-#				if [[ $open_flag == "true" ]]
-#				then
-#					echo "Opening $target.cbz"
-#					open "$target.cbz"
-#				fi
-			
+
 		else
 			echo "\"$target\" is not a directory or not readable. Skipping."
 		fi #-d

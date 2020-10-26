@@ -65,6 +65,7 @@ This lives in my `~/projects/scripts` directory and is added to my `$PATH`. Not 
 | parallel                | Third-party. GNU parallel                                                                                                                                                                        |
 | pass-show               | Helper script to just output a one-line-password                                                                                                                                    |
 | pdf-parser.py           | Third-party script to parse a PDF                                                                                                                                                   |
+| pip2arch.py             | Third-party script to generate [PKGBUILD from pip packages](https://github.com/lclarkmichalek/pip2arch/)
 | plutil.pl               | implementation of binary/UTF-8 (text) XML conversion of plist files                                                                                                                 |
 | port_block_check.sh     | Run this behind a firewall to see if there are any outbound ports that are blocked                                                                                                  |
 | prettyping              | Third-party, runs a nice graphical ping                                                                                                                                             |

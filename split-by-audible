@@ -22,8 +22,15 @@ This is exactly what you'll get if you copy-paste the listing from the web playe
 Unfortunately, I've found that for very long Audiobooks, this isn't precise enough and the errors add up.
 */
 
+if(count($argv) != 3) {
+	die("Please run as split-by-audible audio.m4a listing.txt\n");
+}
+
 $INPUT_FILE=$argv[1];
 $listing=$argv[2];
+
+is_readable($INPUT_FILE) or die("$INPUT_FILE not readable\n");
+is_readable($listing) or die("$listing not readable\n");
 
 $startTime = 0;
 $inputData = file($listing);

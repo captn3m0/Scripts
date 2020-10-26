@@ -87,6 +87,7 @@ This lives in my `~/projects/scripts` directory and is added to my `$PATH`. Not 
 | snippy.sh               | Third-party. Helper script for i3 to let me create snippets and type them easily.                                                                                                   |
 | split-audio-by-chapters | Splits a audiobook by its various chapters. I added support for providing a chapters.txt file with chapter names in case the M4B file doesn't have correct names                    |
 | split-by-audible        | Similar to split-audio-by-chapters, but this one uses a different chapter-listing format, which is what you get when you copy the Audible tracklist from the Audible web player.    |
+| split-by-silence        | ffmpeg wrapper to use silence detection to split files. [Source](https://gist.github.com/vi/2fe3eb63383fcfdad7483ac7c97e9deb)
 | sql                     | Third-party. Runs SQL commands against different drivers based on DBURL. This is a GNU project                                                                                      |
 | ssl-cipher-test.sh      | Runs a SSL Cipher test by testing all available ciphers against an upstream server                                                                                                  |
 | stream-audio.sh         | Streams pulseaudio to RTSP                                                                                                                                                          |

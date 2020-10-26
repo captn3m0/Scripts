@@ -68,6 +68,7 @@ This lives in my `~/projects/scripts` directory and is added to my `$PATH`. Not 
 | plutil.pl               | implementation of binary/UTF-8 (text) XML conversion of plist files                                                                                                                 |
 | port_block_check.sh     | Run this behind a firewall to see if there are any outbound ports that are blocked                                                                                                  |
 | prettyping              | Third-party, runs a nice graphical ping                                                                                                                                             |
+| pulse-recorder.py       | Records a [pulse audio stream easily](https://gist.github.com/ramast/c47bd5e57586e9c2deb74975e27089f0/).
 | resty                   | Third-party. A tiny command line REST interface for bash and zsh.                                                                                                                   |
 | reverse_video.sh        | Reverse a video                                                                                                                                                                     |
 | rip-git.pl              | Third-party. Brute force and download a publicly exposed .git directory                                                                                                             |

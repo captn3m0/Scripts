@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# -allow a command to fail with !’s side effect on errexit
+# -use return value from ${PIPESTATUS[0]}, because ! hosed $?
+! getopt --test > /dev/null
+if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
+    echo 'I’m sorry, `getopt --test` failed in this environment.'
+    exit 1
+fi
+
+OPTIONS=hv
+LONGOPTS=background:,no-cleanup,help,verbose,dry-run
+
+# -regarding ! and PIPESTATUS see above
+# -temporarily store output to be able to check for errors
+# -activate quoting/enhanced mode (e.g. by writing out “--options”)
+# -pass arguments only via   -- "$@"   to separate them correctly
+! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+    # e.g. return value is 1
+    #  then getopt has complained about wrong arguments to stdout
+    exit 2
+fi
+# read getopt’s output this way to handle the quoting right:
+eval set -- "$PARSED"
+
+bg="black" cleanup=y dry=n verbose=n
+
+# usage function
+function show_help()
+{
+   cat << HEREDOC
+
+   Usage: audiobook2video [--background white] [--no-cleanup] [--verbose] [--dry-run] [--verbose] audio.m4a cover.jpg
+
+   optional arguments:
+     -h, --help           show this help message and exit
+     --no-cleanup         Do not cleanup temporary files
+     --background         Change background color for video (default black). See list of color and formats at https://imagemagick.org/script/color.php
+     --dry-run            do a dry run, dont change any files
+     -v, --verbose        increase the verbosity of the bash script
+
+HEREDOC
+}
+
+while true; do
+    case "$1" in
+        --background)
+            bg="$2"
+            shift 2
+            ;;
+        --no-cleanup)
+            cleanup=n
+            shift
+            ;;
+        -h|--help)
+          show_help
+          exit 0
+          ;;
+        --dry-run)
+          dry=y
+          shift
+          ;;
+        -v|--verbose)
+          verbose=y
+          shift
+          ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
+    esac
+done
+
+if [ $# -lt 2 ]; then
+  echo "Missing arguments. See help:"
+  show_help
+  exit 1
+fi
+
+AUDIO_FILENAME="$1"
+COVER_FILENAME="$2"
+VIDEO_FILENAME="$(echo "$AUDIO_FILENAME" | cut -f 1 -d '.').mp4"
+# TODO: Support different backgrounds
+BACKGROUND_COLOR="$bg"
+NEW_COVER_FILENAME="$(mktemp --suffix=".png")"
+# Used in case m4a is not provided
+NEW_AUDIO_FILENAME="$(mktemp --suffix=".m4a")"
+
+if [ ! -f "$AUDIO_FILENAME" ]; then
+  echo "$AUDIO_FILENAME not found"
+  exit 1
+fi
+
+if [ ! -f "$COVER_FILENAME" ]; then
+  echo "$COVER_FILENAME not found"
+  exit 1
+fi
+
+echo "Saving background image to $NEW_COVER_FILENAME"
+convert -background "$BACKGROUND_COLOR" -gravity center -resize 1080x1080 -extent 1920x1080 "$COVER_FILENAME" "$NEW_COVER_FILENAME"
+
+# Convert files to M4A if needed
+case $AUDIO_FILENAME in
+  *.m4a)  echo "m4a supported, not converting";;
+  *.m4b)  echo "m4b supported, not converting";;
+  *)
+    echo "Saving audio file $NEW_AUDIO_FILENAME"
+    ffmpeg -loglevel fatal -y -i "$AUDIO_FILENAME" -vn -codec:a aac -strict -2 -b:a 384k -r:a 48000 "$NEW_AUDIO_FILENAME"
+    AUDIO_FILENAME="$NEW_AUDIO_FILENAME"
+    ;;
+esac
+
+echo "Starting conversion"
+ffmpeg -r 1 -loop 1 -y -i "$COVER_FILENAME" -i "$AUDIO_FILENAME" -c:a copy -r 1 -vcodec libx264 -shortest "$VIDEO_FILENAME"
+
+echo "Saved: $VIDEO_FILENAME"
+
+if [[ $cleanup == "y" ]]; then
+  echo "Cleaning up"
+  rm -f $NEW_AUDIO_FILENAME $NEW_COVER_FILENAME
+fi

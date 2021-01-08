@@ -18,14 +18,4 @@ function sync_repo() {
 sync_repo /home/nemo/.config/xpad yes
 # passwords
 sync_repo /home/nemo/.password-store
-
-CWD1=`pwd`
-# mobile-passwords
-cp -r /home/nemo/.password-store/mobile-sync/*.gpg /home/nemo/projects/personal/mobile-passwords/
-sync_repo /home/nemo/projects/personal/mobile-passwords
-
-# TODO:
-# scripts?: NO
-# imapfilter: YES
-# /etc: YES
-# dotfiles: NO
+sync_repo /home/nemo/.notable

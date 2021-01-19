@@ -9,6 +9,8 @@ function sync_repo() {
     pushd $1
     git config --bool branch.master.sync true
     git config --bool branch.master.syncNewFiles true
+    git config --bool branch.main.sync true
+    git config --bool branch.main.syncNewFiles true
     git-sync
     popd
   fi

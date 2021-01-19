@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ifuse --documents com.amazon.Lassen /home/nemo/mnt/ios/Kindle
+ifuse --documents com.tortugapower.audiobookplayer /home/nemo/mnt/ios/BookPlayer
+ifuse --documents com.kolyvan.rocket /home/nemo/mnt/ios/KyBook
+ifuse --documents it.twsweb.Nextcloud /home/nemo/mnt/ios/NextCloud
+ifuse --documents me.mssun.passforios /home/nemo/mnt/ios/pass
+ifuse --documents org.mozilla.ios.Firefox /home/nemo/mnt/ios/Firefox

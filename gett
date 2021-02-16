@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+# source: https://github.com/baskerville/eat/blob/master/eat
 import re, sys, json, time
 from os.path import expanduser, exists, getmtime, basename
 import http.client
@@ -62,11 +63,10 @@ def print_file(file_dict):
     file_id = file_dict['fileid']
     file_name = file_dict['filename']
     gett_url = file_dict['getturl']
-    size = format_size(file_dict['size'])
     created = time.strftime('%Y-%m-%d %H:%M', time.localtime(file_dict['created']))
     downloads = file_dict['downloads']
-    print('{0:>3}  {1:<28}  {2:>6}  {3}  {4}  {5:>3}'\
-          .format(file_id, file_name, size, created, gett_url, downloads))
+    print('{0:>3}  {1:<28}  {2}  {3}  {4:>3}'\
+          .format(file_id, file_name, created, gett_url, downloads))
 
 def print_share(share_dict):
     title = ''
@@ -99,13 +99,12 @@ def show_status():
     request(msg, short_url, url_params = url_params)
     data = handle_response()
     body = json.loads(data)
+    body = body['user']
     limit = format_size(body['storage']['limit'] + body['storage']['extra'])
     used = format_size(body['storage']['used'])
     full_name = body['fullname']
     email = body['email']
     user_line = '%s  %s' % (full_name, email)
-    if sys.stdout.isatty():
-        user_line = grey(user_line)
     print(user_line)
     print('%s / %s' % (used, limit))
 
@@ -170,7 +169,7 @@ def show_url(args):
     request(msg, short_url, url_params = args)
     data = handle_response()
     body = json.loads(data)
-    print(body['getturl'])
+    print(body['downloadurl'])
 
 
 def remove_share(args):
@@ -250,10 +249,7 @@ def make_connection(action, domain = SERVER_DOMAIN):
     global connection
     if connection != None:
         connection.close()
-    if action in NON_SECURE_ACTIONS:
-        connection = http.client.HTTPConnection(domain)
-    else:
-        connection = http.client.HTTPSConnection(domain)
+    connection = http.client.HTTPConnection(domain)
 
 def init():
     global settings

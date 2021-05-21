@@ -108,3 +108,5 @@ This lives in my `~/projects/scripts` directory and is added to my `$PATH`. Not 
 | yubi-insert.sh          | Run when I insert a yubikey. Checks the Serial, and if they don't match, lock my screen                                                                                             |
 | yubilock.sh             | Lock my screen when I remove my device. Runs using udev triggers                                                                                                                    |
 | ec | script to edit common configuration |
+| get-nav | Get NAV of a mutual fund from the Kuvera API |
+| audiobook2video | Generates a video for a music file, with a background |

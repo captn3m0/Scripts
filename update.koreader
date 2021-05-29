@@ -1,4 +1,7 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
 
 # Updates koreader
 
@@ -13,8 +16,9 @@ DOWNLOAD_URL=$(cat "$JSON_PATH" | jq --raw-output '.assets[] |select(.name | con
 FILE_NAME=$(cat "$JSON_PATH" | jq --raw-output '.assets[] |select(.name | contains("kindle-v"))|.name')
 
 echo "Latest version is $FILE_NAME"
+echo "Download URL is $DOWNLOAD_URL"
 
-wget --no-clobber --directory-prefix="$STORAGE_DIRECTORY" "$DOWNLOAD_URL" --output-file "$FILE_NAME"
+wget --no-clobber "$DOWNLOAD_URL" --output-document "$STORAGE_DIRECTORY/$FILE_NAME"
 
 if [[ -d "$KINDLE_MOUNT_PATH" ]]; then
   if [[ $@ == *'--please'* ]]; then

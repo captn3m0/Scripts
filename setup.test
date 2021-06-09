@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This script tests my current local setup
+# and ensures everything is correctly configured
+
+function validate_command() {
+    if ! command -v "$1" &> /dev/null
+    then
+        echo "[missing] $1: $2"
+    fi
+}
+
+pidof xss-lock >/dev/null || echo "[E] xss-lock is not running"
+validate_command multilockscreen
+validate_command yubikey-touch-detector
+validate_command yubikey-touch-detector
+validate_command redshift-gtk
+validate_command xfsettingsd
+validate_command ibus-daemon
+validate_command goldendict
+validate_command autorandr
+validate_command alacritty
+validate_command dunst
+validate_command flameshot
+validate_command passmenu
+validate_command dmenu_run
+validate_command connman-gtk "Optional"

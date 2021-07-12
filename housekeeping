@@ -28,6 +28,22 @@ sudo journalctl --vacuum-size=100M
 # Clear docker stuff
 sudo docker system prune -af
 
+sudo rm -rf /usr/share/themes/NumixSolarizedLightMagenta
+sudo rm -rf /usr/share/themes/NumixSolarizedLightYellow
+sudo rm -rf /usr/share/themes/NumixSolarizedLightRed
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkOrange
+sudo rm -rf /usr/share/themes/NumixSolarizedLightCyan
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkGreen
+sudo rm -rf /usr/share/themes/NumixSolarizedLightBlue
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkYellow
+sudo rm -rf /usr/share/themes/NumixSolarizedLightBlueDarkTop
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkBlue
+sudo rm -rf /usr/share/themes/NumixSolarizedLightViolet
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkViolet
+sudo rm -rf /usr/share/themes/NumixSolarizedLightOrange
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkMagenta
+sudo rm -rf /usr/share/themes/NumixSolarizedDarkCyan
+
 ## KEEP ALL NETWORK RELATED STUFF BELOW THIS
 echo "Going to try stuff that needs network access now"
 

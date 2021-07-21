@@ -1,0 +1,30 @@
+#!/bin/bash
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -euo pipefail
+
+# Source: https://rentry.co/n4ost
+
+f="$1"
+t=$(mktemp)
+mp4extract-bento4 moov/trak/mdia/minf/stbl/stsd/mp4a/esds \
+    "$f" /dev/stdout | xxd -p | tr -d '\n' > $t
+
+magic=$(sed -re 's/^.*0580808002(....).*$/\1/' $t)
+
+if [ "$magic" != "1212" ]; then
+    echo "no need to fix"
+    rm "$t"
+    exit 0
+fi
+
+t2=`mktemp`
+new=$(sed -re 's/05808080021212/05808080021210/' $t | xxd -r -p >$t2)
+rm $t
+old="${f}.pre-fix"
+mv -v "$f" "$old"
+mp4edit --replace \
+    moov/trak/mdia/minf/stbl/stsd/mp4a/esds:"$t2" \
+    "$old" \
+    "$f"
+
+rm "$old"

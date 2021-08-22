@@ -2,6 +2,18 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# PODMAN FTW!
-podman run -v $(pwd):/data ryanfb/inaudible@sha256:b66738d235be1007797e3a0a0ead115fa227e81e2ab5b7befb97d43f7712fac5
-for i in *.m4a; do fix-audible-m4a "$i";done
+# If you don't have AUDIBLE_ACTIVATION_BYTES, run
+# podman run -v $(pwd):/data ryanfb/inaudible@sha256:b66738d235be1007797e3a0a0ead115fa227e81e2ab5b7befb97d43f7712fac5
+# Or if that isn't possible, see this project: https://github.com/inAudible-NG/tables
+# Getting AUDIBLE_ACTIVATION_BYTES for your account is a one-time thing, it remains same forever.
+# So once you have it, you can save it and then re-use it for instant future decryption using ffmpeg.
+
+# This gets it from my password manager
+gettoken Keys/AUDIBLE_ACTIVATION_BYTES
+for i in *.aax; do
+	m4a_file="${i%%.*}.m4a"
+	if [ ! -e "$m4a_file" ]; then
+		ffmpeg -loglevel panic -y -activation_bytes ${AUDIBLE_ACTIVATION_BYTES} -i "$i" -c:a copy -vn "$m4a_file"
+		fix-audible-m4a "$m4a_file"
+	fi
+done

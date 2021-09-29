@@ -16,25 +16,36 @@ Most common options you might want to overwrite are
 --name
 """
 
+# Remove the script name
 arguments = sys.argv
 del arguments[0]
 
+# Last argument must be the directory or file
 directory = sys.argv[-1]
 comment = None
-for file in ["README.txt", "readme.txt", "README.md", "readme.md", "README.nfo"]:
-	file_path = directory + "/" + file
-	if os.path.exists(file_path):
-		with open(file_path, 'r') as f:
-			comment = f.read()
 
-if !comment:
-	print("Could not find a readme file in %s" % directory)
+# Only try for a comment if we have a directory
+if os.path.isdir(directory)
+	for file in ["README.txt", "readme.txt", "README.md", "readme.md", "README.nfo"]:
+		file_path = directory + "/" + file
+		if os.path.exists(file_path):
+			with open(file_path, 'r') as f:
+				comment = f.read()
+	if !comment
+		print("Could not find a readme file in %s" % directory)
 
+# Add all trackers
 tracker_file = os.path.expanduser('~/.config/trackers.txt')
 with open(tracker_file, 'r') as t:
-	list = ["mktorrent"] + ["--announce=%s" % x for x in t.read().split("\n")] + ['--no-date']
+	trackers = t.read().split("\n")
+	list = ["mktorrent"] + ["--announce=%s" % tracker_url for tracker_url in trackers] + ['--no-date']
+
+# Add a comment if we found one
 if comment:
-	list+=["--comment=\"%s\""%comment]
+	list+=["--comment=\"%s\"" % comment]
+
+# Append any extra arguments we got, including the directory
 list += arguments
 
+# Run and passthrough stdout (default)
 subprocess.run(args=list)

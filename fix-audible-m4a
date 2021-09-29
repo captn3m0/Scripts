@@ -12,7 +12,6 @@ mp4extract-bento4 moov/trak/mdia/minf/stbl/stsd/mp4a/esds \
 magic=$(sed -re 's/^.*0580808002(....).*$/\1/' $t)
 
 if [ "$magic" != "1212" ]; then
-    echo "no need to fix"
     rm "$t"
     exit 0
 fi

@@ -9,11 +9,15 @@ IFS=$'\n\t'
 # So once you have it, you can save it and then re-use it for instant future decryption using ffmpeg.
 
 # This gets it from my password manager
-gettoken Keys/AUDIBLE_ACTIVATION_BYTES
+export AUDIBLE_ACTIVATION_BYTES=$(pass show Keys/AUDIBLE_ACTIVATION_BYTES)
+
 for i in *.aax; do
 	m4a_file="${i%%.*}.m4a"
 	if [ ! -e "$m4a_file" ]; then
-		ffmpeg -loglevel panic -y -activation_bytes ${AUDIBLE_ACTIVATION_BYTES} -i "$i" -c:a copy -vn "$m4a_file"
+		ffmpeg -loglevel panic -y -activation_bytes ${AUDIBLE_ACTIVATION_BYTES} -i "$i" -c:a copy -movflags +faststart -vn "$m4a_file"
+		# See https://github.com/captn3m0/Scripts/blob/master/fix-audible-m4a for this script
+		# Dependencies are: bento4 (https://aur.archlinux.org/packages/bento4/)
+		# bash, and sed
 		fix-audible-m4a "$m4a_file"
 	fi
 done

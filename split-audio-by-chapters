@@ -55,7 +55,9 @@ while read -r first _ _ start _ end; do
     # -vn = no video stream
     # -metadata title= put in a chapter title
     # -acodec copy = copy the audio stream
+    # +faststart = Relocating this moov atom to the beginning of the file can facilitate playback before the file is completely downloaded by the client. 
     ffmpeg -hide_banner -loglevel panic \
+      -movflags +faststart \
       -vsync 2 -sn -dn -vn -i "$1" -ss "${start%?}" -to "$end" -metadata title="$CHAPTER_TITLE" -dn -vn -sn -acodec copy "$FILENAME" </dev/null
 
     ((CHAPTER_INDEX++))

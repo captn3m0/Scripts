@@ -1,0 +1,40 @@
+#!/bin/env python
+
+import os,sys
+import subprocess
+
+"""
+Creates a new torrent using mktorrent with some sensible defaults:
+--no-date
+Finds a README file and uses that as the comment
+Picks up a list of trackers from ~/.config/trackers.txt
+
+Run as create-new-torrent --any --other-options /path/to/directory
+
+Most common options you might want to overwrite are
+--output
+--name
+"""
+
+arguments = sys.argv
+del arguments[0]
+
+directory = sys.argv[-1]
+comment = None
+for file in ["README.txt", "readme.txt", "README.md", "readme.md", "README.nfo"]:
+	file_path = directory + "/" + file
+	if os.path.exists(file_path):
+		with open(file_path, 'r') as f:
+			comment = f.read()
+
+if !comment:
+	print("Could not find a readme file in %s" % directory)
+
+tracker_file = os.path.expanduser('~/.config/trackers.txt')
+with open(tracker_file, 'r') as t:
+	list = ["mktorrent"] + ["--announce=%s" % x for x in t.read().split("\n")] + ['--no-date']
+if comment:
+	list+=["--comment=\"%s\""%comment]
+list += arguments
+
+subprocess.run(args=list)

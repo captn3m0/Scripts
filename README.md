@@ -111,3 +111,4 @@ This lives in my `~/projects/scripts` directory and is added to my `$PATH`. Not 
 | get-nav | Get NAV of a mutual fund from the Kuvera API |
 | audiobook2video | Generates a video for a music file, with a background |
 | fix-audible-m4a | Third-party. Fixes audible m4a fiels with incorrect Audio Object Type Specific Config bit. Source: https://rentry.co/n4ost | 
+| create-new-torrent| Creates a new torrent file with sensible defaults using mktorrent |

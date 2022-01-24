@@ -12,7 +12,7 @@ echo "karn update"
 find /home/nemo/.cache/yay -iregex '.*\.\(bz2\|tar\|zip\|deb\|xz\|part\|rpm\|gz\|zst\|AppImage\|pacman\|jar\)$' -delete
 echo "Cleared yay cache"
 
-find /home/nemo/projects/personal/aur-*  -iregex '.*\.\(bz2\|tar\|zip\|deb\|tar.zst\|xz\|part\|rpm\|gz\|tgz\)$' -delete
+find /home/nemo/projects/personal/aur-*  -iregex '.*\.\(bz2\|tar\|zip\|deb\|tar.zst\|xz\|part\|AppImage\|rpm\|gz\|tgz\)$' -delete
 echo "Cleared personal AUR cache"
 
 sudo pacman -Rns $(pacman -Qtdq)

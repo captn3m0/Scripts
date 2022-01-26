@@ -20,18 +20,23 @@ Most common options you might want to overwrite are
 arguments = sys.argv
 del arguments[0]
 
+if len(sys.argv) < 1:
+	print("Invalid arguments")
+	print("  create-new-torrent --output file.torrent /path/to/directory")
+	sys.exit(1)
+
 # Last argument must be the directory or file
 directory = sys.argv[-1]
 comment = None
 
 # Only try for a comment if we have a directory
-if os.path.isdir(directory)
+if os.path.isdir(directory):
 	for file in ["README.txt", "readme.txt", "README.md", "readme.md", "README.nfo"]:
 		file_path = directory + "/" + file
 		if os.path.exists(file_path):
 			with open(file_path, 'r') as f:
 				comment = f.read()
-	if !comment
+	if not comment:
 		print("Could not find a readme file in %s" % directory)
 
 # Add all trackers
